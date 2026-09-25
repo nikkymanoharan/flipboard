@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#111111">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FlipBoard">
+  <title>FlipBoard</title>
+  <style>
+:root {
+  --bg: #0f0f0f;
+  --card: #1a1a1a;
+  --field: #141414;
+  --text: #f1f1ee;
+  --muted: #9a9a96;
+  --line: #2c2c2c;
+  --accent: #f1f1ee;
+  --accent-text: #111111;
+  --ok: #4cd08a;
+  --bad: #ff7a70;
+  --board: #0a0a0a;
+  --cell: #222;
+  --cell-text: #f1f0ea;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f4f4f2;
+    --card: #ffffff;
+    --field: #ffffff;
+    --text: #151515;
+    --muted: #6b6b6b;
+    --line: #e2e2de;
+    --accent: #111111;
+    --accent-text: #ffffff;
+    --ok: #0f7b3f;
+    --bad: #b3261e;
+    --board: #151515;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.4;
+}
+.wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 16px 48px;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+.top nav { display: flex; gap: 14px; align-items: baseline; }
+.top a, .link { color: var(--muted); font-size: 14px; }
+h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+h2 { font-size: 16px; margin-bottom: 4px; }
+h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 28px 0 8px; }
+.muted { color: var(--muted); font-weight: 400; }
+.small { font-size: 12px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+.field { margin-top: 14px; }
+input, textarea {
+  font: inherit;
+  font-size: 16px; /* no zoom on iOS */
+  color: var(--text);
+  background: var(--field);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 13px;
+  width: 100%;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--muted); }
+textarea { resize: vertical; min-height: 84px; }
+button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+.primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  width: 100%;
+  margin-top: 14px;
+}
+.primary:disabled { opacity: 0.35; cursor: default; }
+.secondary {
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.secondary:disabled { opacity: 0.4; cursor: default; }
+.link { text-decoration: underline; }
+.status { min-height: 1.4em; margin-top: 10px; font-size: 14px; font-weight: 600; }
+.status.ok { color: var(--ok); }
+.status.bad, .error { color: var(--bad); font-size: 14px; }
+
+/* Board preview: the same 22 x 6 grid as the TV. */
+.preview {
+  background: var(--board);
+  border-radius: 10px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(22, 1fr);
+  gap: 2px;
+}
+.preview span {
+  aspect-ratio: 0.76;
+  background: var(--cell);
+  color: var(--cell-text);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: clamp(7px, 2.5vw, 13px);
+  line-height: 1;
+  overflow: hidden;
+}
+.preview-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  margin-top: 6px;
+  min-height: 1.3em;
+}
+.fit-ok { color: var(--ok); }
+.fit-long { color: #e8b44c; }
+
+.codes-row { display: flex; gap: 8px; }
+.chip {
+  flex: none;
+  min-width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--field);
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.palette .chip { min-width: 38px; height: 38px; font-size: 18px; }
+.palette .swatch { border: none; }
+
+.from-row { margin-top: 14px; }
+.inline { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.inline input { flex: 1; }
+
+.controls { margin-top: 26px; }
+.slider { grid-template-columns: 1fr auto; align-items: center; }
+.slider input { grid-column: 1 / -1; padding: 0; border: none; background: none; accent-color: var(--accent); height: 28px; }
+.slider output { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 500; }
+details summary { cursor: pointer; font-size: 14px; color: var(--muted); }
+details[open] { display: grid; gap: 8px; }
+.controls-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+.recent { list-style: none; display: grid; gap: 8px; }
+.recent button {
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <h1>FlipBoard</h1>
+      <nav>
+        <a id="status-link" href="/status" hidden>Status</a>
+        <span id="mode-note" class="muted small"></span>
+      </nav>
+    </header>
+
+    <section id="setup" class="card" hidden>
+      <h2>Connect to your TV</h2>
+      <p class="muted">This phone isn't paired yet. At home, open the control panel (http://192.168.1.250), tap <b>Share pairing link</b> under "Send from anywhere", and open that link on this phone.</p>
+      <p id="setup-error" class="error" hidden></p>
+    </section>
+
+    <section id="compose" hidden>
+      <div class="preview" id="preview" aria-label="How the board will look"></div>
+      <div class="preview-meta">
+        <span id="fit-info"></span>
+        <span id="page-info" class="muted"></span>
+      </div>
+
+      <label class="field">Message
+        <textarea id="msg" rows="3" maxlength="400" placeholder="Short and sweet works best"></textarea>
+      </label>
+
+      <label class="field">Codes <span class="muted">(a line of tiles above the message)</span>
+        <div class="codes-row">
+          <input id="codes" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="{r}{o}{y}{g}{b}{v}">
+          <button id="random-btn" class="chip" type="button" title="Random tiles">🎲</button>
+        </div>
+      </label>
+
+      <div class="palette" id="palette" aria-label="Tap to add a tile"></div>
+
+      <div class="from-row">
+        <label class="inline">From <input id="name-input" autocomplete="nickname" maxlength="24" placeholder="Your name"></label>
+      </div>
+
+      <button id="send-btn" class="primary" type="button" disabled>Send to TV</button>
+      <p id="send-status" class="status" role="status"></p>
+
+      <section id="controls" class="card controls" hidden>
+        <h2>Board</h2>
+        <label class="slider">Flap speed <output id="flapSpeed-out"></output>
+          <input type="range" id="flapSpeed" min="25" max="150" step="5">
+        </label>
+        <label class="slider">Flap sound <output id="flapVolume-out"></output>
+          <input type="range" id="flapVolume" min="0" max="200" step="10">
+        </label>
+        <label class="slider">Ding <output id="chime-out"></output>
+          <input type="range" id="chime" min="0" max="200" step="10">
+        </label>
+        <label class="slider">Awake time <output id="awakeMinutes-out"></output>
+          <input type="range" id="awakeMinutes" min="1" max="60" step="1">
+        </label>
+        <details>
+          <summary>Advanced</summary>
+          <label class="slider">Sound sync <output id="syncMs-out"></output>
+            <input type="range" id="syncMs" min="-400" max="800" step="20">
+          </label>
+          <p class="muted small">Raise it if the flaps move before you hear them; lower it if you hear them first.</p>
+        </details>
+        <div class="controls-foot">
+          <span id="settings-status" class="muted small"></span>
+          <button id="replay-btn" class="secondary" type="button" disabled>Replay last message</button>
+        </div>
+        <p class="muted small">Changes apply from the next message.</p>
+      </section>
+
+      <section id="pair" class="card controls" hidden>
+        <h2>Send from anywhere</h2>
+        <p class="muted small">Pair a phone once, here at home. It can then send from anywhere: messages are encrypted on the phone with your board's key, and the board ignores anything else.</p>
+        <div id="pair-ready" hidden>
+          <div class="controls-foot">
+            <button id="pair-share" class="secondary" type="button">Share pairing link</button>
+            <button id="pair-copy" class="secondary" type="button">Copy link</button>
+          </div>
+          <p class="muted small">Open the link once on the phone you're pairing, then add that page to its home screen. Treat the link like a password: anyone with it can post to your TV.</p>
+          <p id="pair-status" class="muted small"></p>
+        </div>
+        <p id="pair-missing" class="muted small" hidden>The page for sending from anywhere isn't published yet.</p>
+      </section>
+
+      <h3 id="recent-title" hidden>Recent</h3>
+      <ul id="recent" class="recent"></ul>
+    </section>
+  </main>
+  <script>
+(() => {
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __esm = (fn, res) => function __init() {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  };
+  var __commonJS = (cb, mod) => function __require() {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  };
+  var __async = (__this, __arguments, generator) => {
+    return new Promise((resolve, reject) => {
+      var fulfilled = (value) => {
+        try {
+          step(generator.next(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var rejected = (value) => {
+        try {
+          step(generator.throw(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+      step((generator = generator.apply(__this, __arguments)).next());
+    });
+  };
+
+  // board/js/constants.js
+  var GRID_COLS, GRID_ROWS;
+  var init_constants = __esm({
+    "board/js/constants.js"() {
+      GRID_COLS = 22;
+      GRID_ROWS = 6;
+    }
+  });
+
+  // board/js/flap/drum.js
+  var COLOR_TOKENS, TILE_COLORS, ICONS, EMOJI_TO_ICON, DRUM, INDEX;
+  var init_drum = __esm({
+    "board/js/flap/drum.js"() {
+      COLOR_TOKENS = {
+        r: "",
+        red: "",
+        o: "",
+        orange: "",
+        y: "",
+        yellow: "",
+        g: "",
+        green: "",
+        b: "",
+        blue: "",
+        v: "",
+        violet: "",
+        purple: "",
+        w: "",
+        white: ""
+      };
+      TILE_COLORS = {
+        "": "#d43a2f",
+        "": "#ec7a22",
+        "": "#f2c230",
+        "": "#2f9e55",
+        "": "#2474c6",
+        "": "#7b44ad",
+        "": "#eeeee8"
+      };
+      ICONS = {
+        "": { name: "heart", emoji: "❤️", color: "#e0413a" },
+        "": { name: "blueheart", emoji: "💙", color: "#3b82d6" },
+        "": { name: "greenheart", emoji: "💚", color: "#3aae5f" },
+        "": { name: "yellowheart", emoji: "💛", color: "#f2c230" },
+        "": { name: "orangeheart", emoji: "🧡", color: "#ef8a2c" },
+        "": { name: "purpleheart", emoji: "💜", color: "#8b52c0" },
+        "": { name: "star", emoji: "⭐", color: "#f5c518" },
+        "": { name: "smile", emoji: "🙂", color: "#f5c518" },
+        "": { name: "sun", emoji: "☀️", color: "#f6b21b" },
+        "": { name: "moon", emoji: "🌙", color: "#f2e7a8" },
+        "": { name: "check", emoji: "✅", color: "#3aae5f" },
+        "": { name: "music", emoji: "🎵", color: "#eeeee8" }
+      };
+      EMOJI_TO_ICON = {};
+      for (const ch of Object.keys(ICONS)) {
+        EMOJI_TO_ICON[ICONS[ch].emoji.replace("️", "")] = ch;
+        COLOR_TOKENS[ICONS[ch].name] = ch;
+      }
+      Object.assign(EMOJI_TO_ICON, {
+        "♥": "",
+        // ♥
+        "♡": "",
+        // ♡
+        "💖": "",
+        // 💖
+        "💗": "",
+        // 💗
+        "😊": "",
+        // 😊
+        "😀": "",
+        // 😀
+        "😃": "",
+        // 😃
+        "☺": "",
+        // ☺
+        "★": "",
+        // ★
+        "🌟": "",
+        // 🌟
+        "✔": "",
+        // ✔
+        "🎶": "",
+        // 🎶
+        "♪": ""
+        // ♪
+      });
+      DRUM = [" "].concat("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$()-+&=;:'\"%,./?".split("")).concat(Object.keys(TILE_COLORS)).concat(Object.keys(ICONS));
+      INDEX = new Map(DRUM.map((ch, i) => [ch, i]));
+    }
+  });
+
+  // board/js/formatMessage.js
+  function normalize(text) {
+    return String(text || "").replace(/\r\n?/g, "\n").replace(/\{([a-z]+)\}/gi, (m, name) => COLOR_TOKENS[name.toLowerCase()] || "").replace(/\uFE0F/g, "").replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF\u2B50\u2661\u2665]/g, (e) => EMOJI_TO_ICON[e] || e).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[‘’‛]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").replace(/…/g, "...").toUpperCase().split("").map((ch) => ch === "\n" || ALLOWED.test(ch) ? ch : ch.trim() ? "" : " ").join("");
+  }
+  function toPages(text, cols = GRID_COLS, rows = GRID_ROWS) {
+    const lines = [];
+    for (const para of normalize(text).split("\n")) {
+      const words = para.split(/\s+/).filter(Boolean);
+      if (!words.length) {
+        lines.push("");
+        continue;
+      }
+      let cur = "";
+      for (let w of words) {
+        while (w.length > cols) {
+          if (cur) lines.push(cur);
+          cur = "";
+          lines.push(w.slice(0, cols));
+          w = w.slice(cols);
+        }
+        if (!cur) cur = w;
+        else if (cur.length + 1 + w.length <= cols) cur += " " + w;
+        else {
+          lines.push(cur);
+          cur = w;
+        }
+      }
+      if (cur) lines.push(cur);
+    }
+    while (lines.length && !lines[0]) lines.shift();
+    while (lines.length && !lines[lines.length - 1]) lines.pop();
+    if (!lines.length) return [];
+    const pages = [];
+    for (let i = 0; i < lines.length; i += rows) {
+      const chunk = lines.slice(i, i + rows);
+      const top = Math.floor((rows - chunk.length) / 2);
+      const page = Array(rows).fill("");
+      chunk.forEach((l, j) => page[top + j] = l);
+      pages.push(page);
+    }
+    return pages;
+  }
+  var ALLOWED;
+  var init_formatMessage = __esm({
+    "board/js/formatMessage.js"() {
+      init_constants();
+      init_drum();
+      ALLOWED = /[A-Z0-9 .,\-!?'/:;&@#+()"%$=\uE001-\uE007\uE011-\uE01C]/;
+    }
+  });
+
+  // board/js/send.js
+  var require_send = __commonJS({
+    "board/js/send.js"(exports) {
+      init_constants();
+      init_formatMessage();
+      init_drum();
+      var KEY = "flipboard.sender";
+      var SERVER = "https://ntfy.sh";
+      var onHub = !!window.FLIP_HUB;
+      function load() {
+        try {
+          return JSON.parse(localStorage.getItem(KEY)) || {};
+        } catch (e) {
+          return {};
+        }
+      }
+      function save(s) {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(s));
+        } catch (e) {
+        }
+      }
+      var prefs = load();
+      var hash = new URLSearchParams(location.hash.slice(1));
+      if (hash.get("t") && /^[0-9a-f]{64}$/.test(hash.get("k") || "")) {
+        prefs = Object.assign({}, prefs, { topic: hash.get("t"), key: hash.get("k") });
+        save(prefs);
+        history.replaceState(null, "", location.pathname + location.search);
+      }
+      var paired = () => !!(prefs.topic && prefs.key);
+      var $ = (id) => document.getElementById(id);
+      var msgEl = $("msg");
+      var codesEl = $("codes");
+      var sendBtn = $("send-btn");
+      var statusEl = $("send-status");
+      var previewEl = $("preview");
+      var previewPage = 0;
+      var lastField = msgEl;
+      function showSetup() {
+        $("setup").hidden = false;
+        $("compose").hidden = true;
+      }
+      function showCompose() {
+        $("setup").hidden = true;
+        $("compose").hidden = false;
+        $("name-input").value = prefs.name || "";
+        $("status-link").hidden = !onHub;
+        $("mode-note").textContent = onHub ? "At home" : "Encrypted";
+        renderPreview();
+        renderRecent();
+        if (onHub) {
+          loadSettings();
+          setupPairing();
+        } else {
+          showRemoteSettings();
+        }
+      }
+      $("name-input").addEventListener("change", () => {
+        prefs = Object.assign({}, prefs, { name: $("name-input").value.trim() });
+        save(prefs);
+      });
+      function fullText() {
+        const codes = codesEl.value.trim();
+        const msg = msgEl.value.trim();
+        return codes && msg ? codes + "\n" + msg : codes || msg;
+      }
+      function renderPreview() {
+        const pages = toPages(fullText());
+        if (previewPage >= pages.length) previewPage = 0;
+        const page = pages[previewPage] || Array(GRID_ROWS).fill("");
+        const cells = [];
+        for (const raw of page) {
+          const chars = Array.from(raw);
+          const pad = Math.max(0, Math.floor((GRID_COLS - chars.length) / 2));
+          const line = Array(pad).fill(" ").concat(chars);
+          while (line.length < GRID_COLS) line.push(" ");
+          for (const ch of line.slice(0, GRID_COLS)) {
+            if (TILE_COLORS[ch]) cells.push('<span style="background:'.concat(TILE_COLORS[ch], '"></span>'));
+            else if (ICONS[ch]) cells.push("<span>".concat(ICONS[ch].emoji, "</span>"));
+            else cells.push("<span>".concat(ch === " " ? "" : escapeHtml(ch), "</span>"));
+          }
+        }
+        previewEl.innerHTML = cells.join("");
+        const fit = $("fit-info");
+        if (!pages.length) {
+          fit.textContent = "";
+        } else if (pages.length === 1) {
+          fit.textContent = "Fits on the board";
+          fit.className = "fit-ok";
+        } else {
+          fit.textContent = "".concat(pages.length, " pages: the board flips through them");
+          fit.className = "fit-long";
+        }
+        $("page-info").textContent = pages.length > 1 ? "showing ".concat(previewPage + 1, "/").concat(pages.length, ", tap to flip") : "";
+        sendBtn.disabled = pages.length === 0;
+      }
+      function escapeHtml(s) {
+        return s.replace(/[&<>"']/g, (c) => "&#".concat(c.charCodeAt(0), ";"));
+      }
+      previewEl.addEventListener("click", () => {
+        previewPage++;
+        renderPreview();
+      });
+      for (const el of [msgEl, codesEl]) {
+        el.addEventListener("input", () => {
+          statusEl.textContent = "";
+          statusEl.className = "status";
+          renderPreview();
+        });
+        el.addEventListener("focus", () => lastField = el);
+      }
+      var COLOR_CODES = [["r", "Red"], ["o", "Orange"], ["y", "Yellow"], ["g", "Green"], ["b", "Blue"], ["v", "Violet"], ["w", "White"]];
+      var COLOR_OF = { r: "", o: "", y: "", g: "", b: "", v: "", w: "" };
+      function buildPalette() {
+        const pal = $("palette");
+        for (const [code, label] of COLOR_CODES) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "chip swatch";
+          b.title = label;
+          b.style.background = TILE_COLORS[COLOR_OF[code]];
+          b.addEventListener("click", () => insert("{".concat(code, "}")));
+          pal.appendChild(b);
+        }
+        for (const ch of Object.keys(ICONS)) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "chip";
+          b.title = ICONS[ch].name;
+          b.textContent = ICONS[ch].emoji;
+          b.addEventListener("click", () => insert(ICONS[ch].emoji));
+          pal.appendChild(b);
+        }
+      }
+      function insert(text) {
+        const el = lastField;
+        const start = el.selectionStart != null ? el.selectionStart : el.value.length;
+        const end = el.selectionEnd != null ? el.selectionEnd : el.value.length;
+        el.value = el.value.slice(0, start) + text + el.value.slice(end);
+        el.focus();
+        el.selectionStart = el.selectionEnd = start + text.length;
+        renderPreview();
+      }
+      $("random-btn").addEventListener("click", () => {
+        const codes = Object.keys(COLOR_OF);
+        let out = "", prev = "";
+        for (let i = 0; i < GRID_COLS; i++) {
+          let c;
+          do
+            c = codes[Math.floor(Math.random() * codes.length)];
+          while (c === prev);
+          out += "{".concat(c, "}");
+          prev = c;
+        }
+        codesEl.value = out;
+        lastField = codesEl;
+        renderPreview();
+      });
+      function send(text) {
+        return __async(this, null, function* () {
+          sendBtn.disabled = true;
+          statusEl.className = "status";
+          statusEl.textContent = "Sending…";
+          const from = (prefs.name || "").trim();
+          try {
+            if (onHub) {
+              const res = yield fetch("/send", { method: "POST", body: JSON.stringify({ text, from }) });
+              if (!res.ok) throw new Error("the hub answered ".concat(res.status));
+            } else {
+              yield sendEncrypted({ type: "msg", text, from });
+            }
+            statusEl.className = "status ok";
+            statusEl.textContent = "Sent at ".concat((/* @__PURE__ */ new Date()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }));
+            remember(text);
+            return true;
+          } catch (e) {
+            statusEl.className = "status bad";
+            statusEl.textContent = "Not sent: ".concat(e.message || "no connection", ". Your message is still here, try again.");
+            return false;
+          } finally {
+            sendBtn.disabled = !fullText();
+          }
+        });
+      }
+      function sendEncrypted(payload) {
+        return __async(this, null, function* () {
+          if (!window.crypto || !crypto.subtle) throw new Error("this browser cannot encrypt (needs https)");
+          const keyBytes = new Uint8Array(prefs.key.match(/../g).map((h) => parseInt(h, 16)));
+          const key = yield crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["encrypt"]);
+          const nonce = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(16).padStart(2, "0")).join("");
+          const body = JSON.stringify(Object.assign({}, payload, { ts: Math.floor(Date.now() / 1e3), n: nonce }));
+          const iv = crypto.getRandomValues(new Uint8Array(12));
+          const aad = new TextEncoder().encode(prefs.topic);
+          const ct = new Uint8Array(yield crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: aad }, key, new TextEncoder().encode(body)));
+          const packed = new Uint8Array(iv.length + ct.length);
+          packed.set(iv, 0);
+          packed.set(ct, iv.length);
+          let bin = "";
+          for (const b of packed) bin += String.fromCharCode(b);
+          const res = yield fetch("".concat(SERVER, "/").concat(encodeURIComponent(prefs.topic)), { method: "POST", body: "fb1:" + btoa(bin) });
+          if (!res.ok) throw new Error("the server answered ".concat(res.status));
+        });
+      }
+      sendBtn.addEventListener("click", () => __async(null, null, function* () {
+        const text = fullText();
+        if (!text) return;
+        if (yield send(text)) {
+          msgEl.value = "";
+          codesEl.value = "";
+          previewPage = 0;
+          renderPreview();
+        }
+      }));
+      $("replay-btn").addEventListener("click", () => {
+        const last = (prefs.recent || [])[0];
+        if (last) send(last);
+      });
+      function remember(text) {
+        const recent = [text].concat((prefs.recent || []).filter((t) => t !== text)).slice(0, 8);
+        prefs = Object.assign({}, prefs, { recent });
+        save(prefs);
+        renderRecent();
+      }
+      function renderRecent() {
+        const recent = prefs.recent || [];
+        $("recent-title").hidden = recent.length === 0;
+        $("replay-btn").disabled = recent.length === 0;
+        const ul = $("recent");
+        ul.innerHTML = "";
+        for (const text of recent) {
+          const li = document.createElement("li");
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = text.replace(/\n/g, "  ·  ");
+          b.addEventListener("click", () => {
+            const lines = text.split("\n");
+            const codesOnly = lines.length > 1 && /^(\{[a-z]+\}|\s)+$/i.test(lines[0]);
+            codesEl.value = codesOnly ? lines[0] : "";
+            msgEl.value = codesOnly ? lines.slice(1).join("\n") : text;
+            previewPage = 0;
+            renderPreview();
+            msgEl.focus();
+          });
+          li.appendChild(b);
+          ul.appendChild(li);
+        }
+      }
+      var SETTINGS = {
+        flapSpeed: (v) => "".concat(v, "%"),
+        flapVolume: (v) => v == 0 ? "off" : "".concat(v, "%"),
+        chime: (v) => v == 0 ? "off" : "".concat(v, "%"),
+        awakeMinutes: (v) => "".concat(v, " min"),
+        syncMs: (v) => "".concat(v > 0 ? "+" : "").concat(v, " ms")
+      };
+      var saveTimer = null;
+      function showValues(st) {
+        for (const key of Object.keys(SETTINGS)) {
+          if (typeof st[key] !== "number") continue;
+          $(key).value = st[key];
+          $("".concat(key, "-out")).textContent = SETTINGS[key](st[key]);
+        }
+      }
+      function loadSettings() {
+        return __async(this, null, function* () {
+          try {
+            const st = yield (yield fetch("/settings.json", { cache: "no-store" })).json();
+            showValues(st);
+            $("controls").hidden = false;
+          } catch (e) {
+            $("controls").hidden = true;
+          }
+        });
+      }
+      function showRemoteSettings() {
+        showValues(Object.assign({ flapSpeed: 60, flapVolume: 100, chime: 100, awakeMinutes: 10, syncMs: 120 }, prefs.settings || {}));
+        $("controls").hidden = false;
+      }
+      for (const key of Object.keys(SETTINGS)) {
+        $(key).addEventListener("input", () => {
+          $("".concat(key, "-out")).textContent = SETTINGS[key]($(key).value);
+          $("settings-status").textContent = "";
+          clearTimeout(saveTimer);
+          saveTimer = setTimeout(saveSettings, onHub ? 350 : 900);
+        });
+      }
+      function saveSettings() {
+        return __async(this, null, function* () {
+          const values = {};
+          for (const k of Object.keys(SETTINGS)) values[k] = parseInt($(k).value, 10);
+          const out = $("settings-status");
+          try {
+            if (onHub) {
+              const q = Object.keys(values).map((k) => "".concat(k, "=").concat(values[k])).join("&");
+              const res = yield fetch("/settings?json=1&".concat(q), { cache: "no-store" });
+              if (!res.ok) throw new Error(res.status);
+            } else {
+              yield sendEncrypted(Object.assign({ type: "settings" }, values));
+              prefs = Object.assign({}, prefs, { settings: values });
+              save(prefs);
+            }
+            out.textContent = "Saved";
+          } catch (e) {
+            out.textContent = onHub ? "Could not save: is the hub on?" : "Could not send: " + (e.message || "no connection");
+          }
+        });
+      }
+      function setupPairing() {
+        $("pair").hidden = false;
+        const base = window.FLIP_PUBLIC_URL;
+        if (!base) {
+          $("pair-missing").hidden = false;
+          return;
+        }
+        const link = "".concat(base, "#t=").concat(window.FLIP_TOPIC, "&k=").concat(window.FLIP_KEY);
+        $("pair-ready").hidden = false;
+        $("pair-share").hidden = !navigator.share;
+        $("pair-share").addEventListener(
+          "click",
+          () => navigator.share({ title: "FlipBoard", text: "Pair this phone with the FlipBoard", url: link }).catch(() => {
+          })
+        );
+        $("pair-copy").addEventListener("click", () => __async(null, null, function* () {
+          try {
+            yield navigator.clipboard.writeText(link);
+            $("pair-status").textContent = "Copied. Paste it into a private chat with yourself, or open it on the phone.";
+          } catch (e) {
+            prompt("Copy this pairing link:", link);
+          }
+        }));
+      }
+      buildPalette();
+      if (onHub || paired()) showCompose();
+      else showSetup();
+    }
+  });
+  require_send();
+})();
+
+</script>
+</body>
+</html>
