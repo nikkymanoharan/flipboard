@@ -194,6 +194,10 @@ details[open] { display: grid; gap: 8px; }
   text-overflow: ellipsis;
 }
 
+.toggle { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.toggle input { width: 22px; height: 22px; accent-color: var(--accent); }
+input[type='time'] { max-width: 9em; }
+
 </style>
 </head>
 <body>
@@ -265,6 +269,18 @@ details[open] { display: grid; gap: 8px; }
           <button id="replay-btn" class="secondary" type="button" disabled>Replay last message</button>
         </div>
         <p class="muted small">Changes apply from the next message.</p>
+      </section>
+
+      <section id="quote" class="card controls" hidden>
+        <h2>Quote of the day</h2>
+        <label class="toggle"><input type="checkbox" id="quoteOn"> Show a quote every day</label>
+        <label class="inline">At <input type="time" id="quoteTime" step="60"></label>
+        <label class="toggle"><input type="checkbox" id="quoteWake"> Switch the TV on for it</label>
+        <p class="muted small">If the TV stays off, the quote waits on the board until someone turns it on.</p>
+        <div class="controls-foot">
+          <span id="quote-status" class="muted small"></span>
+          <button id="quote-now" class="secondary" type="button">Show today's quote now</button>
+        </div>
       </section>
 
       <section id="pair" class="card controls" hidden>
@@ -713,6 +729,13 @@ details[open] { display: grid; gap: 8px; }
       };
       var saveTimer = null;
       function showValues(st) {
+        if (typeof st.quoteOn === "number") {
+          $("quoteOn").checked = st.quoteOn === 1;
+          $("quoteWake").checked = st.quoteWake === 1;
+          const pad = (n) => String(n).padStart(2, "0");
+          $("quoteTime").value = "".concat(pad(st.quoteHour), ":").concat(pad(st.quoteMin));
+          $("quote").hidden = false;
+        }
         for (const key of Object.keys(SETTINGS)) {
           if (typeof st[key] !== "number") continue;
           $(key).value = st[key];
@@ -731,7 +754,12 @@ details[open] { display: grid; gap: 8px; }
         });
       }
       function showRemoteSettings() {
-        showValues(Object.assign({ flapSpeed: 60, flapVolume: 100, chime: 100, awakeMinutes: 10, syncMs: 120 }, prefs.settings || {}));
+        showValues(
+          Object.assign(
+            { flapSpeed: 60, flapVolume: 100, chime: 100, awakeMinutes: 10, syncMs: 120, quoteOn: 1, quoteHour: 7, quoteMin: 30, quoteWake: 0 },
+            prefs.settings || {}
+          )
+        );
         $("controls").hidden = false;
       }
       for (const key of Object.keys(SETTINGS)) {
@@ -742,9 +770,34 @@ details[open] { display: grid; gap: 8px; }
           saveTimer = setTimeout(saveSettings, onHub ? 350 : 900);
         });
       }
+      function quoteValues() {
+        const [h, m] = ($("quoteTime").value || "07:30").split(":").map((n) => parseInt(n, 10));
+        return { quoteOn: $("quoteOn").checked ? 1 : 0, quoteHour: h || 0, quoteMin: m || 0, quoteWake: $("quoteWake").checked ? 1 : 0 };
+      }
+      for (const id of ["quoteOn", "quoteTime", "quoteWake"]) {
+        $(id).addEventListener("change", () => {
+          $("quote-status").textContent = "";
+          saveSettings().then(() => $("quote-status").textContent = $("settings-status").textContent);
+        });
+      }
+      $("quote-now").addEventListener("click", () => __async(null, null, function* () {
+        const out = $("quote-status");
+        out.textContent = "Sending…";
+        try {
+          if (onHub) {
+            const res = yield fetch("/quote", { cache: "no-store" });
+            if (!res.ok) throw new Error(res.status);
+          } else {
+            yield sendEncrypted({ type: "quote" });
+          }
+          out.textContent = "On its way to the TV";
+        } catch (e) {
+          out.textContent = "Could not send: " + (e.message || "no connection");
+        }
+      }));
       function saveSettings() {
         return __async(this, null, function* () {
-          const values = {};
+          const values = quoteValues();
           for (const k of Object.keys(SETTINGS)) values[k] = parseInt($(k).value, 10);
           const out = $("settings-status");
           try {
