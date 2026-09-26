@@ -198,6 +198,22 @@ details[open] { display: grid; gap: 8px; }
 .toggle input { width: 22px; height: 22px; accent-color: var(--accent); }
 input[type='time'] { max-width: 9em; }
 
+.tvbar { grid-template-columns: 1fr auto; align-items: center; margin-bottom: 14px; padding: 12px 16px; }
+.tvbar strong { margin-right: 8px; }
+.tv-buttons { display: flex; gap: 8px; }
+.switch { position: relative; width: 54px; height: 30px; display: inline-block; }
+.switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.switch span { position: absolute; inset: 0; background: var(--line); border-radius: 30px; transition: background 0.2s; cursor: pointer; }
+.switch span::before { content: ''; position: absolute; width: 24px; height: 24px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
+.switch input:checked + span { background: var(--ok); }
+.switch input:checked + span::before { transform: translateX(24px); }
+.urgent { margin-top: 12px; font-weight: 500; }
+.field-inline { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+select { font: inherit; font-size: 15px; color: var(--text); background: var(--field); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+.recent .ticks { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; white-space: normal; }
+.recent .ticks .on { color: var(--text); }
+.recent .ticks .seen { color: #4aa3ff; font-weight: 600; }
+
 </style>
 </head>
 <body>
@@ -217,6 +233,21 @@ input[type='time'] { max-width: 9em; }
     </section>
 
     <section id="compose" hidden>
+      <div class="tvbar card">
+        <div>
+          <strong>TV</strong>
+          <span id="tv-state" class="muted small"></span>
+        </div>
+        <label class="switch" id="tv-switch-wrap" hidden>
+          <input type="checkbox" id="tv-switch" aria-label="TV power">
+          <span></span>
+        </label>
+        <div id="tv-buttons" class="tv-buttons" hidden>
+          <button id="tv-on" class="secondary" type="button">Turn on</button>
+          <button id="tv-off" class="secondary" type="button">Turn off</button>
+        </div>
+      </div>
+
       <div class="preview" id="preview" aria-label="How the board will look"></div>
       <div class="preview-meta">
         <span id="fit-info"></span>
@@ -239,6 +270,7 @@ input[type='time'] { max-width: 9em; }
       <div class="from-row">
         <label class="inline">From <input id="name-input" autocomplete="nickname" maxlength="24" placeholder="Your name"></label>
       </div>
+      <label class="toggle urgent"><input type="checkbox" id="urgent"> Urgent: show it even if the TV is in use</label>
 
       <button id="send-btn" class="primary" type="button" disabled>Send to TV</button>
       <p id="send-status" class="status" role="status"></p>
@@ -256,6 +288,12 @@ input[type='time'] { max-width: 9em; }
         </label>
         <label class="slider">Awake time <output id="awakeMinutes-out"></output>
           <input type="range" id="awakeMinutes" min="1" max="60" step="1">
+        </label>
+        <label class="field-inline">After the awake time, switch the TV off
+          <select id="autoOff">
+            <option value="1">whenever the board is on screen</option>
+            <option value="0">only if the board switched it on</option>
+          </select>
         </label>
         <details>
           <summary>Advanced</summary>
@@ -298,6 +336,7 @@ input[type='time'] { max-width: 9em; }
       </section>
 
       <h3 id="recent-title" hidden>Recent</h3>
+      <p id="receipt-note" class="muted small" hidden></p>
       <ul id="recent" class="recent"></ul>
     </section>
   </main>
@@ -526,9 +565,17 @@ input[type='time'] { max-width: 9em; }
         if (onHub) {
           loadSettings();
           setupPairing();
+          $("tv-switch-wrap").hidden = false;
+          refreshTv();
+          setInterval(refreshTv, 4e3);
+          setInterval(refreshReceipts, 5e3);
         } else {
           showRemoteSettings();
+          $("tv-buttons").hidden = false;
+          $("tv-state").textContent = "";
+          setInterval(refreshReceipts, 2e4);
         }
+        refreshReceipts();
       }
       $("name-input").addEventListener("change", () => {
         prefs = Object.assign({}, prefs, { name: $("name-input").value.trim() });
@@ -637,16 +684,20 @@ input[type='time'] { max-width: 9em; }
           statusEl.className = "status";
           statusEl.textContent = "Sending…";
           const from = (prefs.name || "").trim();
+          const urgent = $("urgent").checked;
           try {
+            let id;
             if (onHub) {
-              const res = yield fetch("/send", { method: "POST", body: JSON.stringify({ text, from }) });
+              const res = yield fetch("/send", { method: "POST", body: JSON.stringify({ text, from, urgent }) });
               if (!res.ok) throw new Error("the hub answered ".concat(res.status));
+              id = (yield res.json()).id;
             } else {
-              yield sendEncrypted({ type: "msg", text, from });
+              id = yield sendEncrypted({ type: "msg", text, from, urgent });
             }
             statusEl.className = "status ok";
-            statusEl.textContent = "Sent at ".concat((/* @__PURE__ */ new Date()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }));
-            remember(text);
+            statusEl.textContent = "Sent at ".concat((/* @__PURE__ */ new Date()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })) + (urgent ? " (urgent)" : "");
+            $("urgent").checked = false;
+            remember(text, id);
             return true;
           } catch (e) {
             statusEl.className = "status bad";
@@ -674,6 +725,29 @@ input[type='time'] { max-width: 9em; }
           for (const b of packed) bin += String.fromCharCode(b);
           const res = yield fetch("".concat(SERVER, "/").concat(encodeURIComponent(prefs.topic)), { method: "POST", body: "fb1:" + btoa(bin) });
           if (!res.ok) throw new Error("the server answered ".concat(res.status));
+          try {
+            return (yield res.json()).id;
+          } catch (e) {
+            return void 0;
+          }
+        });
+      }
+      function decryptBoardMessage(body) {
+        return __async(this, null, function* () {
+          if (!/^fb1:/.test(body || "")) return null;
+          try {
+            const raw = Uint8Array.from(atob(body.slice(4)), (c) => c.charCodeAt(0));
+            const keyBytes = new Uint8Array(prefs.key.match(/../g).map((h) => parseInt(h, 16)));
+            const key = yield crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["decrypt"]);
+            const plain = yield crypto.subtle.decrypt(
+              { name: "AES-GCM", iv: raw.slice(0, 12), additionalData: new TextEncoder().encode(prefs.topic) },
+              key,
+              raw.slice(12)
+            );
+            return JSON.parse(new TextDecoder().decode(plain));
+          } catch (e) {
+            return null;
+          }
         });
       }
       sendBtn.addEventListener("click", () => __async(null, null, function* () {
@@ -687,31 +761,47 @@ input[type='time'] { max-width: 9em; }
         }
       }));
       $("replay-btn").addEventListener("click", () => {
-        const last = (prefs.recent || [])[0];
-        if (last) send(last);
+        const last = recentList()[0];
+        if (last) send(last.text);
       });
-      function remember(text) {
-        const recent = [text].concat((prefs.recent || []).filter((t) => t !== text)).slice(0, 8);
+      function recentList() {
+        return (prefs.recent || []).map((r) => typeof r === "string" ? { text: r } : r);
+      }
+      function remember(text, id) {
+        const recent = [{ text, id, at: Date.now() }].concat(recentList().filter((r) => r.text !== text)).slice(0, 8);
         prefs = Object.assign({}, prefs, { recent });
         save(prefs);
         renderRecent();
       }
+      var receipts = {};
+      function tickLine(r) {
+        if (!r.id) return "";
+        const rc = receipts[r.id] || {};
+        const time = (s) => new Date(s * 1e3).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        if (rc.seen) return '<span class="seen">✓✓ Seen '.concat(time(rc.seen), "</span>");
+        if (rc.onTv) return '<span class="on">✓✓ On the TV '.concat(time(rc.onTv), "</span>");
+        return "✓ Sent";
+      }
       function renderRecent() {
-        const recent = prefs.recent || [];
+        const recent = recentList();
         $("recent-title").hidden = recent.length === 0;
         $("replay-btn").disabled = recent.length === 0;
         const ul = $("recent");
         ul.innerHTML = "";
-        for (const text of recent) {
+        for (const r of recent) {
           const li = document.createElement("li");
           const b = document.createElement("button");
           b.type = "button";
-          b.textContent = text.replace(/\n/g, "  ·  ");
+          b.textContent = r.text.replace(/\n/g, "  ·  ");
+          const ticks = document.createElement("span");
+          ticks.className = "ticks";
+          ticks.innerHTML = tickLine(r);
+          b.appendChild(ticks);
           b.addEventListener("click", () => {
-            const lines = text.split("\n");
+            const lines = r.text.split("\n");
             const codesOnly = lines.length > 1 && /^(\{[a-z]+\}|\s)+$/i.test(lines[0]);
             codesEl.value = codesOnly ? lines[0] : "";
-            msgEl.value = codesOnly ? lines.slice(1).join("\n") : text;
+            msgEl.value = codesOnly ? lines.slice(1).join("\n") : r.text;
             previewPage = 0;
             renderPreview();
             msgEl.focus();
@@ -720,6 +810,68 @@ input[type='time'] { max-width: 9em; }
           ul.appendChild(li);
         }
       }
+      function refreshReceipts() {
+        return __async(this, null, function* () {
+          try {
+            if (onHub) {
+              const d = yield (yield fetch("/receipts.json", { cache: "no-store" })).json();
+              for (const r of d.receipts || []) receipts[r.id] = { onTv: r.onTv, seen: r.seen };
+              const note = $("receipt-note");
+              note.hidden = !!d.sensor;
+              note.textContent = '"Seen" appears once the motion sensor is connected.';
+            } else {
+              const res = yield fetch("".concat(SERVER, "/").concat(encodeURIComponent(prefs.topic), "/json?poll=1&since=24h"));
+              const lines = (yield res.text()).split("\n").filter(Boolean);
+              for (const line of lines) {
+                const m = JSON.parse(line);
+                if (m.event !== "message") continue;
+                const p = yield decryptBoardMessage(m.message);
+                if (p && p.type === "receipt") receipts[p.id] = { onTv: p.onTv, seen: p.seen };
+              }
+            }
+            renderRecent();
+          } catch (e) {
+          }
+        });
+      }
+      var tvHoldUntil = 0;
+      function describeTv(st) {
+        if (!st.on) return "in standby";
+        if (st.board) {
+          const left = st.awakeLeft > 0 ? ", off in ".concat(Math.ceil(st.awakeLeft / 60), " min") : "";
+          return "on, showing the board".concat(left);
+        }
+        const app = (st.app || "").replace(/^app:|^source:/, "");
+        return app && app !== "unknown" ? "on (".concat(app, ")") : "on";
+      }
+      function refreshTv() {
+        return __async(this, null, function* () {
+          if (Date.now() < tvHoldUntil) return;
+          try {
+            const st = yield (yield fetch("/tv.json", { cache: "no-store" })).json();
+            $("tv-switch").checked = !!st.on;
+            $("tv-state").textContent = describeTv(st);
+          } catch (e) {
+            $("tv-state").textContent = "hub not answering";
+          }
+        });
+      }
+      function setTv(power) {
+        return __async(this, null, function* () {
+          tvHoldUntil = Date.now() + 12e3;
+          $("tv-state").textContent = power === "on" ? "turning on…" : "turning off…";
+          try {
+            if (onHub) yield fetch("/tv?power=".concat(power), { cache: "no-store" });
+            else yield sendEncrypted({ type: "tv", power });
+            if (!onHub) $("tv-state").textContent = power === "on" ? "asked to turn on" : "asked to turn off";
+          } catch (e) {
+            $("tv-state").textContent = "could not reach it: " + (e.message || "no connection");
+          }
+        });
+      }
+      $("tv-switch").addEventListener("change", () => setTv($("tv-switch").checked ? "on" : "off"));
+      $("tv-on").addEventListener("click", () => setTv("on"));
+      $("tv-off").addEventListener("click", () => setTv("off"));
       var SETTINGS = {
         flapSpeed: (v) => "".concat(v, "%"),
         flapVolume: (v) => v == 0 ? "off" : "".concat(v, "%"),
@@ -729,6 +881,7 @@ input[type='time'] { max-width: 9em; }
       };
       var saveTimer = null;
       function showValues(st) {
+        if (typeof st.autoOff === "number") $("autoOff").value = String(st.autoOff);
         if (typeof st.quoteOn === "number") {
           $("quoteOn").checked = st.quoteOn === 1;
           $("quoteWake").checked = st.quoteWake === 1;
@@ -756,7 +909,7 @@ input[type='time'] { max-width: 9em; }
       function showRemoteSettings() {
         showValues(
           Object.assign(
-            { flapSpeed: 60, flapVolume: 100, chime: 100, awakeMinutes: 10, syncMs: 120, quoteOn: 1, quoteHour: 7, quoteMin: 30, quoteWake: 0 },
+            { flapSpeed: 60, flapVolume: 100, chime: 100, awakeMinutes: 10, syncMs: 120, quoteOn: 1, quoteHour: 7, quoteMin: 30, quoteWake: 0, autoOff: 1 },
             prefs.settings || {}
           )
         );
@@ -795,9 +948,10 @@ input[type='time'] { max-width: 9em; }
           out.textContent = "Could not send: " + (e.message || "no connection");
         }
       }));
+      $("autoOff").addEventListener("change", () => saveSettings());
       function saveSettings() {
         return __async(this, null, function* () {
-          const values = quoteValues();
+          const values = Object.assign(quoteValues(), { autoOff: parseInt($("autoOff").value, 10) });
           for (const k of Object.keys(SETTINGS)) values[k] = parseInt($(k).value, 10);
           const out = $("settings-status");
           try {
