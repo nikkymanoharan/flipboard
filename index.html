@@ -289,6 +289,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         <label class="slider">Awake time <output id="awakeMinutes-out"></output>
           <input type="range" id="awakeMinutes" min="1" max="60" step="1">
         </label>
+        <label class="toggle"><input type="checkbox" id="staticFx"> TV static and crackle before new messages</label>
         <label class="field-inline">After the awake time, switch the TV off
           <select id="autoOff">
             <option value="1">whenever the board is on screen</option>
@@ -882,6 +883,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
       var saveTimer = null;
       function showValues(st) {
         if (typeof st.autoOff === "number") $("autoOff").value = String(st.autoOff);
+        if (typeof st.staticFx === "number") $("staticFx").checked = st.staticFx === 1;
         if (typeof st.quoteOn === "number") {
           $("quoteOn").checked = st.quoteOn === 1;
           $("quoteWake").checked = st.quoteWake === 1;
@@ -909,7 +911,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
       function showRemoteSettings() {
         showValues(
           Object.assign(
-            { flapSpeed: 60, flapVolume: 100, chime: 100, awakeMinutes: 10, syncMs: 120, quoteOn: 1, quoteHour: 7, quoteMin: 30, quoteWake: 0, autoOff: 1 },
+            { flapSpeed: 60, flapVolume: 100, chime: 100, awakeMinutes: 10, syncMs: 120, quoteOn: 1, quoteHour: 7, quoteMin: 30, quoteWake: 0, autoOff: 1, staticFx: 1 },
             prefs.settings || {}
           )
         );
@@ -949,9 +951,13 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         }
       }));
       $("autoOff").addEventListener("change", () => saveSettings());
+      $("staticFx").addEventListener("change", () => saveSettings());
       function saveSettings() {
         return __async(this, null, function* () {
-          const values = Object.assign(quoteValues(), { autoOff: parseInt($("autoOff").value, 10) });
+          const values = Object.assign(quoteValues(), {
+            autoOff: parseInt($("autoOff").value, 10),
+            staticFx: $("staticFx").checked ? 1 : 0
+          });
           for (const k of Object.keys(SETTINGS)) values[k] = parseInt($(k).value, 10);
           const out = $("settings-status");
           try {
