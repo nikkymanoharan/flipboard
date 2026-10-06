@@ -8,34 +8,39 @@
   <meta name="apple-mobile-web-app-title" content="FlipBoard">
   <title>FlipBoard</title>
   <style>
+/* Warm neutrals that sit well next to the 3D living room. */
 :root {
-  --bg: #0f0f0f;
-  --card: #1a1a1a;
-  --field: #141414;
-  --text: #f1f1ee;
-  --muted: #9a9a96;
-  --line: #2c2c2c;
-  --accent: #f1f1ee;
-  --accent-text: #111111;
-  --ok: #4cd08a;
-  --bad: #ff7a70;
-  --board: #0a0a0a;
-  --cell: #222;
+  --bg: #f4f1ec;
+  --card: #ffffff;
+  --field: #faf8f5;
+  --text: #221d18;
+  --muted: #7a6f64;
+  --line: #e7e1d8;
+  --accent: #2b2420;
+  --accent-text: #fff8ee;
+  --marigold: #e89a2c;
+  --ok: #2f9e5c;
+  --bad: #b3261e;
+  --board: #151515;
+  --cell: #232323;
   --cell-text: #f1f0ea;
+  --shadow: 0 1px 2px rgba(34, 29, 24, 0.05), 0 8px 24px rgba(34, 29, 24, 0.06);
 }
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
-    --bg: #f4f4f2;
-    --card: #ffffff;
-    --field: #ffffff;
-    --text: #151515;
-    --muted: #6b6b6b;
-    --line: #e2e2de;
-    --accent: #111111;
-    --accent-text: #ffffff;
-    --ok: #0f7b3f;
-    --bad: #b3261e;
-    --board: #151515;
+    --bg: #121214;
+    --card: #1c1c1f;
+    --field: #232327;
+    --text: #f1ece4;
+    --muted: #a39a90;
+    --line: #2e2e33;
+    --accent: #f1ece4;
+    --accent-text: #1a1714;
+    --ok: #4cd08a;
+    --bad: #ff7a70;
+    --board: #0a0a0a;
+    --cell: #222;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
   }
 }
 
@@ -43,84 +48,156 @@
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
 }
 .wrap {
   max-width: 560px;
   margin: 0 auto;
-  padding: max(16px, env(safe-area-inset-top)) 16px 48px;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(48px, env(safe-area-inset-bottom));
 }
 .top {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 14px;
+  align-items: center;
+  margin: 4px 0 14px;
 }
-.top nav { display: flex; gap: 14px; align-items: baseline; }
+.top nav { display: flex; gap: 14px; align-items: center; }
 .top a, .link { color: var(--muted); font-size: 14px; }
-h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
-h2 { font-size: 16px; margin-bottom: 4px; }
-h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 28px 0 8px; }
+#mode-note {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+#mode-note:empty { display: none; }
+h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.1px; }
+h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 28px 2px 10px; }
 .muted { color: var(--muted); font-weight: 400; }
 .small { font-size: 12px; }
 .card {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 18px;
   padding: 16px;
   display: grid;
   gap: 12px;
+  box-shadow: var(--shadow);
 }
 label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
-.field { margin-top: 14px; }
+.field { margin-top: 16px; }
 input, textarea {
   font: inherit;
   font-size: 16px; /* no zoom on iOS */
   color: var(--text);
   background: var(--field);
   border: 1.5px solid var(--line);
-  border-radius: 10px;
-  padding: 11px 13px;
+  border-radius: 12px;
+  padding: 12px 14px;
   width: 100%;
+  transition: border-color 0.15s;
 }
-input:focus, textarea:focus { outline: none; border-color: var(--muted); }
-textarea { resize: vertical; min-height: 84px; }
+input:focus, textarea:focus { outline: none; border-color: var(--marigold); }
+textarea { resize: vertical; min-height: 88px; }
 button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+button:focus-visible { outline: 2px solid var(--marigold); outline-offset: 2px; }
 .primary {
   background: var(--accent);
   color: var(--accent-text);
   font-weight: 700;
   font-size: 16px;
-  padding: 14px 18px;
-  border-radius: 10px;
+  padding: 15px 18px;
+  border-radius: 14px;
   width: 100%;
-  margin-top: 14px;
+  margin-top: 16px;
+  transition: transform 0.1s, opacity 0.15s;
 }
-.primary:disabled { opacity: 0.35; cursor: default; }
+.primary:active:not(:disabled) { transform: scale(0.985); }
+.primary:disabled { opacity: 0.3; cursor: default; }
 .secondary {
   border: 1.5px solid var(--line);
-  border-radius: 10px;
-  padding: 9px 12px;
+  background: var(--field);
+  border-radius: 12px;
+  padding: 9px 13px;
   font-size: 14px;
   font-weight: 600;
 }
 .secondary:disabled { opacity: 0.4; cursor: default; }
 .link { text-decoration: underline; }
-.status { min-height: 1.4em; margin-top: 10px; font-size: 14px; font-weight: 600; }
+.status { min-height: 1.4em; margin-top: 10px; font-size: 14px; font-weight: 600; text-align: center; }
 .status.ok { color: var(--ok); }
 .status.bad, .error { color: var(--bad); font-size: 14px; }
+
+/* The living room, live */
+.live { padding: 0; gap: 0; overflow: hidden; margin-bottom: 12px; }
+.live-stage {
+  position: relative;
+  height: min(52vh, 440px);
+  background: radial-gradient(120% 90% at 50% 35%, #efeae2, #d6cdc0);
+}
+@media (prefers-color-scheme: dark) {
+  .live-stage { background: radial-gradient(120% 90% at 50% 35%, #2a2723, #151414); }
+}
+.live-stage iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.live-stage iframe.ready { opacity: 1; }
+.room-status {
+  position: absolute;
+  inset: auto 16px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+.now {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 13px 16px 14px;
+  border-top: 1px solid var(--line);
+}
+.now-body { display: grid; gap: 1px; min-width: 0; }
+.now-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.now-text { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.now-meta { font-size: 12px; color: var(--muted); }
+.now-meta:empty { display: none; }
+.live-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: #b5aca2;
+}
+.live-dot.on { background: var(--ok); box-shadow: 0 0 0 0 rgba(47, 158, 92, 0.5); animation: pulse 2s infinite; }
+.live-dot.off { background: var(--marigold); }
+@keyframes pulse {
+  70% { box-shadow: 0 0 0 7px rgba(47, 158, 92, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(47, 158, 92, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .live-dot.on { animation: none; } }
 
 /* Board preview: the same 22 x 6 grid as the TV. */
 .preview {
   background: var(--board);
-  border-radius: 10px;
-  padding: 8px;
+  border-radius: 14px;
+  padding: 9px;
   display: grid;
   grid-template-columns: repeat(22, 1fr);
   gap: 2px;
+  margin-top: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), var(--shadow);
 }
 .preview span {
   aspect-ratio: 0.76;
@@ -142,43 +219,46 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   font-size: 13px;
   margin-top: 6px;
   min-height: 1.3em;
+  padding: 0 2px;
 }
 .fit-ok { color: var(--ok); }
-.fit-long { color: #e8b44c; }
+.fit-long { color: #c98a1c; }
 
 .codes-row { display: flex; gap: 8px; }
 .chip {
   flex: none;
-  min-width: 44px;
-  height: 44px;
-  border-radius: 10px;
+  min-width: 46px;
+  height: 46px;
+  border-radius: 12px;
   border: 1.5px solid var(--line);
   background: var(--field);
   font-size: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.1s;
 }
+.chip:active { transform: scale(0.94); }
 .palette {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
 }
-.palette .chip { min-width: 38px; height: 38px; font-size: 18px; }
+.palette .chip { min-width: 38px; height: 38px; font-size: 18px; border-radius: 10px; }
 .palette .swatch { border: none; }
 
-.from-row { margin-top: 14px; }
+.from-row { margin-top: 16px; }
 .inline { display: flex; align-items: center; gap: 10px; font-weight: 600; }
 .inline input { flex: 1; }
 
 .controls { margin-top: 26px; }
 .slider { grid-template-columns: 1fr auto; align-items: center; }
-.slider input { grid-column: 1 / -1; padding: 0; border: none; background: none; accent-color: var(--accent); height: 28px; }
+.slider input { grid-column: 1 / -1; padding: 0; border: none; background: none; accent-color: var(--marigold); height: 28px; }
 .slider output { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 500; }
 details summary { cursor: pointer; font-size: 14px; color: var(--muted); }
 details[open] { display: grid; gap: 8px; }
-.controls-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.controls-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .recent { list-style: none; display: grid; gap: 8px; }
 .recent button {
@@ -186,8 +266,8 @@ details[open] { display: grid; gap: 8px; }
   text-align: left;
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 14px;
+  padding: 11px 14px;
   font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
@@ -195,33 +275,24 @@ details[open] { display: grid; gap: 8px; }
 }
 
 .toggle { display: flex; align-items: center; gap: 10px; font-weight: 600; }
-.toggle input { width: 22px; height: 22px; accent-color: var(--accent); }
+.toggle input { width: 22px; height: 22px; accent-color: var(--marigold); }
 input[type='time'] { max-width: 9em; }
 
 .tvbar { grid-template-columns: 1fr auto; align-items: center; margin-bottom: 14px; padding: 12px 16px; }
 .tvbar strong { margin-right: 8px; }
 .tv-buttons { display: flex; gap: 8px; }
-.switch { position: relative; width: 54px; height: 30px; display: inline-block; }
+.switch { position: relative; width: 54px; height: 32px; display: inline-block; }
 .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
-.switch span { position: absolute; inset: 0; background: var(--line); border-radius: 30px; transition: background 0.2s; cursor: pointer; }
-.switch span::before { content: ''; position: absolute; width: 24px; height: 24px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
+.switch span { position: absolute; inset: 0; background: var(--line); border-radius: 32px; transition: background 0.2s; cursor: pointer; }
+.switch span::before { content: ''; position: absolute; width: 26px; height: 26px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); }
 .switch input:checked + span { background: var(--ok); }
-.switch input:checked + span::before { transform: translateX(24px); }
+.switch input:checked + span::before { transform: translateX(22px); }
 .urgent { margin-top: 12px; font-weight: 500; }
 .field-inline { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
-select { font: inherit; font-size: 15px; color: var(--text); background: var(--field); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+select { font: inherit; font-size: 15px; color: var(--text); background: var(--field); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 11px; }
 .recent .ticks { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; white-space: normal; }
 .recent .ticks .on { color: var(--text); }
-.recent .ticks .seen { color: #4aa3ff; font-weight: 600; }
-
-/* Send | Room tabs */
-.tabs { display: flex; gap: 4px; padding: 3px; margin-bottom: 14px; background: var(--field); border: 1px solid var(--line); border-radius: 12px; }
-.tabs button { flex: 1; padding: 9px 12px; border-radius: 9px; font-size: 15px; font-weight: 600; color: var(--muted); }
-.tabs button[aria-selected='true'] { background: var(--accent); color: var(--accent-text); }
-/* The 3D room fills the screen below the tabs (top set from script). */
-.room { position: fixed; left: 0; right: 0; bottom: 0; top: var(--room-top, 120px); }
-.room iframe { display: block; width: 100%; height: 100%; border: 0; }
-.room-status { position: absolute; left: 16px; right: 16px; top: 16px; text-align: center; font-size: 14px; }
+.recent .ticks .seen { color: #2f7fd6; font-weight: 600; }
 
 </style>
 </head>
@@ -235,11 +306,6 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
       </nav>
     </header>
 
-    <nav id="tabs" class="tabs" role="tablist" hidden>
-      <button id="tab-send" role="tab" aria-selected="true" type="button">Send</button>
-      <button id="tab-room" role="tab" aria-selected="false" type="button">Room</button>
-    </nav>
-
     <section id="setup" class="card" hidden>
       <h2>Connect to your TV</h2>
       <p class="muted">This phone isn't paired yet. At home, open the control panel (http://192.168.1.250), tap <b>Share pairing link</b> under "Send from anywhere", and open that link on this phone.</p>
@@ -247,6 +313,22 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
     </section>
 
     <section id="compose" hidden>
+      <!-- The living room, live: the 3D TV shows what the real one shows. -->
+      <div class="live card">
+        <div class="live-stage">
+          <iframe id="room-frame" title="Your living room, live"></iframe>
+          <p id="room-status" class="room-status" hidden></p>
+        </div>
+        <div class="now">
+          <span id="live-dot" class="live-dot"></span>
+          <div class="now-body">
+            <span class="now-label">On the TV</span>
+            <span id="now-text" class="now-text"></span>
+            <span id="now-meta" class="now-meta"></span>
+          </div>
+        </div>
+      </div>
+
       <div class="tvbar card">
         <div>
           <strong>TV</strong>
@@ -354,11 +436,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
       <ul id="recent" class="recent"></ul>
     </section>
   </main>
-  <!-- The 3D living room, loaded the first time the Room tab is opened. -->
-  <section id="room" class="room" hidden>
-    <p id="room-status" class="room-status muted" hidden></p>
-    <iframe id="room-frame" title="3D living room"></iframe>
-  </section>
+
   <script>
 (() => {
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -576,7 +654,6 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
       function showCompose() {
         $("setup").hidden = true;
         $("compose").hidden = false;
-        $("tabs").hidden = false;
         $("name-input").value = prefs.name || "";
         $("status-link").hidden = !onHub;
         $("mode-note").textContent = onHub ? "At home" : "Encrypted";
@@ -596,6 +673,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
           setInterval(refreshReceipts, 2e4);
         }
         refreshReceipts();
+        startLive();
       }
       $("name-input").addEventListener("change", () => {
         prefs = Object.assign({}, prefs, { name: $("name-input").value.trim() });
@@ -718,7 +796,6 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
             statusEl.textContent = "Sent at ".concat((/* @__PURE__ */ new Date()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })) + (urgent ? " (urgent)" : "");
             $("urgent").checked = false;
             remember(text, id);
-            roomShow(text);
             return true;
           } catch (e) {
             statusEl.className = "status bad";
@@ -848,6 +925,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
                 if (m.event !== "message") continue;
                 const p = yield decryptBoardMessage(m.message);
                 if (p && p.type === "receipt") receipts[p.id] = { onTv: p.onTv, seen: p.seen };
+                if (p && p.type === "now") applyNow(p);
               }
             }
             renderRecent();
@@ -856,7 +934,6 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         });
       }
       var tvHoldUntil = 0;
-      var tvOn = null;
       function describeTv(st) {
         if (!st.on) return "in standby";
         if (st.board) {
@@ -871,8 +948,6 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
           if (Date.now() < tvHoldUntil) return;
           try {
             const st = yield (yield fetch("/tv.json", { cache: "no-store" })).json();
-            if (tvOn !== null && tvOn !== !!st.on) roomPower(!!st.on);
-            tvOn = !!st.on;
             $("tv-switch").checked = !!st.on;
             $("tv-state").textContent = describeTv(st);
           } catch (e) {
@@ -884,7 +959,6 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         return __async(this, null, function* () {
           tvHoldUntil = Date.now() + 12e3;
           $("tv-state").textContent = power === "on" ? "turning on…" : "turning off…";
-          roomPower(power === "on");
           try {
             if (onHub) yield fetch("/tv?power=".concat(power), { cache: "no-store" });
             else yield sendEncrypted({ type: "tv", power });
@@ -1021,6 +1095,9 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
       }
       var roomFrame = $("room-frame");
       var roomLoaded = false;
+      var nowState = null;
+      var nowLive = false;
+      var drawn = { words: null, on: null };
       function roomTV() {
         try {
           return roomLoaded ? roomFrame.contentWindow.RoomTV || null : null;
@@ -1031,46 +1108,104 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
       function roomText(text) {
         return String(text || "").replace(/\{[a-z]+\}/gi, " ").replace(/\s+/g, " ").trim();
       }
-      function roomShow(text) {
-        const tv = roomTV();
-        const words = roomText(text);
-        if (tv && words) tv.show(words);
+      function applyNow(n) {
+        if (!n || typeof n.text !== "string") return;
+        if (nowState && n.ts && nowState.ts && n.ts < nowState.ts) return;
+        nowState = { text: n.text, from: n.from || "", at: n.at || 0, on: !!n.on, ts: n.ts || 0 };
+        renderNow();
       }
-      function roomPower(on) {
+      function renderNow() {
+        const n = nowState;
+        $("live-dot").className = "live-dot" + (n && nowLive ? n.on ? " on" : " off" : "");
+        if (!n) {
+          $("now-text").textContent = nowLive ? "Nothing on the board yet" : "Waiting for the TV…";
+          $("now-meta").textContent = "";
+          return;
+        }
+        const words = roomText(n.text);
+        const time = (s) => new Date(s * 1e3).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        $("now-text").textContent = words || "Coloured tiles";
+        $("now-meta").textContent = [n.from, n.at ? time(n.at) : "", n.on ? "" : "TV in standby"].filter(Boolean).join(" · ");
+        if (!onHub) $("tv-state").textContent = n.on ? "on" : "in standby";
         const tv = roomTV();
-        if (tv) tv.power(on);
+        if (!tv) return;
+        if (words !== drawn.words) {
+          tv.show(words || " ");
+          focusRoomTV();
+          drawn = { words, on: true };
+        }
+        if (n.on !== drawn.on) {
+          tv.power(n.on);
+          drawn.on = n.on;
+        }
       }
-      function roomSync() {
+      function focusRoomTV() {
+        try {
+          roomFrame.contentDocument.getElementById("send").click();
+        } catch (e) {
+        }
+      }
+      function pollNow() {
         return __async(this, null, function* () {
-          if (onHub) {
-            try {
-              const d = yield (yield fetch("/latest.json", { cache: "no-store" })).json();
-              if (d.message) roomShow(d.message);
-            } catch (e) {
-            }
-            if (tvOn !== null) roomPower(tvOn);
-          } else {
-            const last = recentList()[0];
-            if (last && last.id && receipts[last.id] && receipts[last.id].onTv) roomShow(last.text);
+          try {
+            const n = yield (yield fetch("/now.json", { cache: "no-store" })).json();
+            nowLive = true;
+            applyNow(n);
+          } catch (e) {
+            nowLive = false;
+            renderNow();
           }
         });
       }
+      function listenNow() {
+        if (!window.EventSource) return;
+        const es = new EventSource("".concat(SERVER, "/").concat(encodeURIComponent(prefs.topic), "/sse"));
+        es.onopen = () => {
+          nowLive = true;
+          renderNow();
+        };
+        es.onerror = () => {
+          nowLive = false;
+          renderNow();
+        };
+        es.onmessage = (e) => __async(null, null, function* () {
+          try {
+            const m = JSON.parse(e.data);
+            if (m.event !== "message") return;
+            const p = yield decryptBoardMessage(m.message);
+            if (p && p.type === "now") applyNow(p);
+            if (p && p.type === "receipt") {
+              receipts[p.id] = { onTv: p.onTv, seen: p.seen };
+              renderRecent();
+            }
+          } catch (err) {
+          }
+        });
+      }
+      function embedRoom() {
+        try {
+          const doc = roomFrame.contentDocument;
+          const st = doc.createElement("style");
+          st.textContent = ".panel{display:none!important}.hint{display:none}.status strong{font-size:18px}";
+          doc.head.appendChild(st);
+          roomFrame.contentWindow.dispatchEvent(new Event("resize"));
+        } catch (e) {
+        }
+      }
       roomFrame.addEventListener("load", () => {
-        if (!roomRequested) return;
+        if (!roomFrame.getAttribute("src") && !roomFrame.srcdoc) return;
         roomLoaded = true;
-        roomSync();
+        embedRoom();
+        drawn = { words: null, on: null };
+        renderNow();
+        roomFrame.classList.add("ready");
       });
-      var roomRequested = false;
       function loadRoom() {
         return __async(this, null, function* () {
-          roomRequested = true;
           if (onHub) {
             roomFrame.src = "room.html";
             return;
           }
-          const note = $("room-status");
-          note.hidden = false;
-          note.textContent = "Opening the room…";
           try {
             const res = yield fetch("room.bin", { cache: "no-cache" });
             if (!res.ok) throw new Error("the page answered ".concat(res.status));
@@ -1083,32 +1218,23 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
               raw.slice(12)
             );
             roomFrame.srcdoc = new TextDecoder().decode(plain);
-            note.hidden = true;
           } catch (e) {
-            roomRequested = false;
+            const note = $("room-status");
+            note.hidden = false;
             note.textContent = e && e.name === "OperationError" ? "This phone could not unlock the room: pair it again with a fresh link from home." : "Could not open the room: " + (e && e.message || "no connection");
           }
         });
       }
-      function placeRoom() {
-        document.documentElement.style.setProperty("--room-top", $("tabs").getBoundingClientRect().bottom + "px");
-      }
-      function showTab(room) {
-        $("tab-send").setAttribute("aria-selected", String(!room));
-        $("tab-room").setAttribute("aria-selected", String(room));
-        $("compose").hidden = room;
-        $("room").hidden = !room;
-        if (room) {
-          window.scrollTo(0, 0);
-          placeRoom();
-          if (!roomRequested) loadRoom();
+      function startLive() {
+        renderNow();
+        loadRoom();
+        if (onHub) {
+          pollNow();
+          setInterval(pollNow, 2e3);
+        } else {
+          listenNow();
         }
       }
-      $("tab-send").addEventListener("click", () => showTab(false));
-      $("tab-room").addEventListener("click", () => showTab(true));
-      window.addEventListener("resize", () => {
-        if (!$("room").hidden) placeRoom();
-      });
       buildPalette();
       if (onHub || paired()) showCompose();
       else showSetup();
