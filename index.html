@@ -212,6 +212,26 @@ button:focus-visible { outline: 2px solid var(--marigold); outline-offset: 2px; 
 .now-text { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
 .now-meta { font-size: 12px; color: var(--muted); }
 .now-meta:empty { display: none; }
+.backlight {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 16px 14px;
+}
+.backlight-swatches { display: flex; gap: 6px; justify-content: flex-end; }
+.backlight-swatches button {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.backlight-swatches button[aria-pressed='true'] { box-shadow: 0 0 0 2px var(--text); }
+.backlight-swatches .off {
+  background: linear-gradient(135deg, transparent 45%, var(--muted) 45%, var(--muted) 55%, transparent 55%), var(--field);
+}
 .live-dot {
   flex: none;
   width: 10px;
@@ -390,6 +410,10 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
             <span id="now-text" class="now-text"></span>
             <span id="now-meta" class="now-meta"></span>
           </div>
+        </div>
+        <div class="backlight" id="backlight" hidden>
+          <span class="now-label">Backlight</span>
+          <div class="backlight-swatches" id="backlight-swatches" role="group" aria-label="TV backlight colour"></div>
         </div>
       </div>
 
@@ -2009,6 +2033,36 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         });
       }
       $("view-tv").addEventListener("click", () => focusRoomTV(false));
+      var BACKLIGHTS = [
+        ["#2bff6a", "Green"],
+        ["#ffffff", "White"],
+        ["#3d7bff", "Blue"],
+        ["#a64dff", "Purple"],
+        ["#ff3b5c", "Red"],
+        ["#ff9a2e", "Orange"],
+        ["", "Off"]
+      ];
+      function applyBacklight() {
+        const colour = prefs.backlight === void 0 ? BACKLIGHTS[0][0] : prefs.backlight;
+        const tv = roomTV();
+        if (tv && tv.led) tv.led(colour || null);
+        for (const b of $("backlight-swatches").children) b.setAttribute("aria-pressed", String(b.dataset.colour === colour));
+      }
+      for (const [colour, name] of BACKLIGHTS) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.title = name;
+        b.setAttribute("aria-label", name);
+        b.dataset.colour = colour;
+        if (colour) b.style.background = colour;
+        else b.className = "off";
+        b.addEventListener("click", () => {
+          prefs = Object.assign({}, prefs, { backlight: colour });
+          save(prefs);
+          applyBacklight();
+        });
+        $("backlight-swatches").appendChild(b);
+      }
       roomFrame.addEventListener("load", () => {
         if (!roomFrame.getAttribute("src") && !roomFrame.srcdoc) return;
         roomLoaded = true;
@@ -2019,6 +2073,8 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         drawn = { words: null, on: null };
         renderNow();
         syncLighting();
+        applyBacklight();
+        $("backlight").hidden = false;
         $("stage-tools").hidden = false;
         roomFrame.classList.add("ready");
       });
