@@ -8,6 +8,15 @@
   <meta name="apple-mobile-web-app-title" content="FlipBoard">
   <title>FlipBoard</title>
   <style>
+/* The board's font (Inter ExtraBold, SIL Open Font License, see
+   fonts/OFL.txt), for the copy of the board on the 3D TV. */
+@font-face {
+  font-family: 'FlipBoard';
+  src: url(data:font/woff2;base64,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) format('woff2');
+  font-weight: 800;
+  font-display: block;
+}
+
 /* Warm neutrals that sit well next to the 3D living room. */
 :root {
   --bg: #f4f1ec;
@@ -156,9 +165,9 @@ button:focus-visible { outline: 2px solid var(--marigold); outline-offset: 2px; 
 /* Lighting and "TV view", floating over the room. */
 .stage-tools {
   position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 10px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -176,9 +185,10 @@ button:focus-visible { outline: 2px solid var(--marigold); outline-offset: 2px; 
   color: #2e2620;
 }
 .seg { display: flex; padding: 3px; }
-.seg button { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #7a6d61; }
+.seg button { padding: 6px 9px; white-space: nowrap; border-radius: 999px; font-size: 13px; font-weight: 600; color: #7a6d61; }
 .seg button[aria-pressed='true'] { background: var(--marigold); color: #2e2014; }
-.tool { padding: 7px 13px; font-size: 13px; font-weight: 600; }
+.tool { padding: 7px 10px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.tool-group { display: flex; gap: 5px; }
 @media (prefers-color-scheme: dark) {
   .seg, .tool { background: rgba(30, 32, 38, 0.85); border-color: rgba(241, 236, 228, 0.14); color: #f1ece4; }
   .seg button { color: #a79c90; }
@@ -367,7 +377,10 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
               <button type="button" data-mode="day" aria-pressed="false">Day</button>
               <button type="button" data-mode="night" aria-pressed="false">Night</button>
             </div>
-            <button id="view-tv" class="tool" type="button" title="Back to the TV">TV view</button>
+            <div class="tool-group">
+              <button id="save-view" class="tool" type="button" title="Open the room at this view from now on">Save view</button>
+              <button id="view-tv" class="tool" type="button" title="Back to the saved view">TV view</button>
+            </div>
           </div>
         </div>
         <div class="now">
@@ -534,6 +547,9 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
   });
 
   // board/js/flap/drum.js
+  function drumIndex(ch) {
+    return INDEX.has(ch) ? INDEX.get(ch) : 0;
+  }
   var COLOR_TOKENS, TILE_COLORS, ICONS, EMOJI_TO_ICON, DRUM, INDEX;
   var init_drum = __esm({
     "board/js/flap/drum.js"() {
@@ -666,12 +682,605 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
     }
   });
 
+  // board/js/flap/FlapBoard.js
+  function drawIcon(ctx, icon, x, y, r) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = icon.color;
+    ctx.strokeStyle = icon.color;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    const name = icon.name;
+    if (name.indexOf("heart") >= 0) {
+      ctx.beginPath();
+      ctx.moveTo(0, r * 0.95);
+      ctx.bezierCurveTo(-r * 1.25, r * 0.1, -r * 0.95, -r * 1.05, 0, -r * 0.45);
+      ctx.bezierCurveTo(r * 0.95, -r * 1.05, r * 1.25, r * 0.1, 0, r * 0.95);
+      ctx.fill();
+    } else if (name === "star") {
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI / 2 + i * Math.PI / 5;
+        const rr = i % 2 ? r * 0.45 : r * 1.05;
+        ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+      }
+      ctx.closePath();
+      ctx.fill();
+    } else if (name === "smile") {
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#1b1b1b";
+      ctx.strokeStyle = "#1b1b1b";
+      ctx.beginPath();
+      ctx.arc(-r * 0.36, -r * 0.28, r * 0.14, 0, Math.PI * 2);
+      ctx.arc(r * 0.36, -r * 0.28, r * 0.14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = r * 0.16;
+      ctx.beginPath();
+      ctx.arc(0, r * 0.02, r * 0.55, Math.PI * 0.2, Math.PI * 0.8);
+      ctx.stroke();
+    } else if (name === "sun") {
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.48, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = r * 0.16;
+      for (let i = 0; i < 8; i++) {
+        const a = i * Math.PI / 4;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7);
+        ctx.lineTo(Math.cos(a) * r * 1.02, Math.sin(a) * r * 1.02);
+        ctx.stroke();
+      }
+    } else if (name === "moon") {
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.9, Math.PI * 0.35, Math.PI * 1.65, false);
+      ctx.arc(r * 0.38, -r * 0.08, r * 0.72, Math.PI * 1.45, Math.PI * 0.55, true);
+      ctx.closePath();
+      ctx.fill();
+    } else if (name === "check") {
+      ctx.lineWidth = r * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.75, r * 0.05);
+      ctx.lineTo(-r * 0.2, r * 0.6);
+      ctx.lineTo(r * 0.8, -r * 0.6);
+      ctx.stroke();
+    } else if (name === "music") {
+      ctx.lineWidth = r * 0.16;
+      ctx.beginPath();
+      ctx.ellipse ? ctx.ellipse(-r * 0.42, r * 0.62, r * 0.3, r * 0.22, -0.4, 0, Math.PI * 2) : ctx.arc(-r * 0.42, r * 0.62, r * 0.26, 0, Math.PI * 2);
+      ctx.ellipse ? ctx.ellipse(r * 0.52, r * 0.4, r * 0.3, r * 0.22, -0.4, 0, Math.PI * 2) : ctx.arc(r * 0.52, r * 0.4, r * 0.26, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.16, r * 0.58);
+      ctx.lineTo(-r * 0.16, -r * 0.75);
+      ctx.lineTo(r * 0.78, -r * 0.97);
+      ctx.lineTo(r * 0.78, r * 0.36);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function roundRect(ctx, x, y, w, h, [tl, tr, br, bl]) {
+    ctx.beginPath();
+    ctx.moveTo(x + tl, y);
+    ctx.lineTo(x + w - tr, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + tr);
+    ctx.lineTo(x + w, y + h - br);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    ctx.lineTo(x + bl, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - bl);
+    ctx.lineTo(x, y + tl);
+    ctx.quadraticCurveTo(x, y, x + tl, y);
+    ctx.closePath();
+  }
+  function crop(src, x, y, w, h, dpr) {
+    const c = document.createElement("canvas");
+    c.width = Math.round(w * dpr);
+    c.height = Math.round(h * dpr);
+    c.getContext("2d").drawImage(src, x * dpr, y * dpr, w * dpr, h * dpr, 0, 0, c.width, c.height);
+    return c;
+  }
+  function shade(hex, amount) {
+    const n = parseInt(hex.slice(1), 16);
+    const mix = (v) => Math.round(amount > 0 ? v + (255 - v) * amount : v * (1 + amount));
+    const r = mix(n >> 16);
+    const g = mix(n >> 8 & 255);
+    const b = mix(n & 255);
+    return "rgb(".concat(r, ",").concat(g, ",").concat(b, ")");
+  }
+  var FLAP_STEP_MS, FALL_MS, BOUNCE_MS, START_SPREAD_MS, STRIPS, CAMERA, CELL_ASPECT, GAP_X, GAP_Y, FRAME_PAD_X, FRAME_PAD_Y, FACE_TOP, FACE_BOTTOM, INK, FONT_STACK, FlapBoard;
+  var init_FlapBoard = __esm({
+    "board/js/flap/FlapBoard.js"() {
+      init_constants();
+      init_drum();
+      FLAP_STEP_MS = 64;
+      FALL_MS = 56;
+      BOUNCE_MS = 170;
+      START_SPREAD_MS = 520;
+      STRIPS = 10;
+      CAMERA = 6.5;
+      CELL_ASPECT = 1.32;
+      GAP_X = 0.16;
+      GAP_Y = 0.13;
+      FRAME_PAD_X = 0.75;
+      FRAME_PAD_Y = 0.7;
+      FACE_TOP = ["#2a2a2a", "#1f1f1f"];
+      FACE_BOTTOM = ["#1d1d1d", "#151515"];
+      INK = "#f1f0ea";
+      FONT_STACK = "'FlipBoard', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+      FlapBoard = class {
+        // opts.size = [width, height] lays the board out at that size instead of
+        // the window's, and opts.dpr fixes the pixel density (used for the copy of
+        // the board shown on the 3D TV in the control panel).
+        constructor(container, soundEngine, opts = {}) {
+          this.opts = opts;
+          this.onStart = null;
+          this.cols = GRID_COLS;
+          this.rows = GRID_ROWS;
+          this.soundEngine = soundEngine;
+          this.isTransitioning = false;
+          this.container = container;
+          this.setSpeed(1);
+          this.el = document.createElement("div");
+          this.el.className = "flap-board";
+          this.bg = document.createElement("canvas");
+          this.fg = document.createElement("canvas");
+          this.bg.className = "flap-layer";
+          this.fg.className = "flap-layer";
+          this.el.appendChild(this.bg);
+          this.el.appendChild(this.fg);
+          container.appendChild(this.el);
+          this.modules = [];
+          for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+              this.modules.push({ r, c, idx: 0, plan: null });
+            }
+          }
+          this._raf = null;
+          this._layout();
+          window.addEventListener("resize", () => {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = setTimeout(() => this._layout(), 120);
+          });
+          if (document.fonts && document.fonts.load) {
+            document.fonts.load("800 40px ".concat(FONT_STACK)).then(() => this._layout(), () => {
+            });
+          }
+        }
+        // ------------------------------------------------------------ public
+        /** 1 = original speed; 0.6 = flaps turn at 60% of it (slower, calmer). */
+        setSpeed(speed) {
+          const k = 1 / Math.max(0.2, Math.min(2.5, speed || 1));
+          this.stepMs = FLAP_STEP_MS * k;
+          this.fallMs = FALL_MS * k;
+          this.bounceMs = BOUNCE_MS * Math.sqrt(k);
+          this.spreadMs = START_SPREAD_MS * Math.sqrt(k);
+        }
+        // replay: modules already showing the right character spin one full turn
+        // and land on it again (for a message sent twice: it should still catch
+        // the eye). Blank modules stay still.
+        // chime: play the "a message is coming" chime first; the flaps wait for it.
+        displayMessage(lines, replay = false, chime = false) {
+          if (this.isTransitioning) return;
+          const now = performance.now();
+          const grid = this._formatToGrid(lines);
+          const events = [];
+          let end = now;
+          const n = DRUM.length;
+          for (const m of this.modules) {
+            const target = drumIndex(grid[m.r][m.c]);
+            let dist = (target - m.idx + n) % n;
+            if (!dist && replay && target !== 0) dist = n;
+            if (!dist) continue;
+            const start = now + Math.random() * this.spreadMs + m.c * 9;
+            const step = this.stepMs * (0.9 + Math.random() * 0.2);
+            m.plan = { from: m.idx, dist, start, step, fall: this.fallMs, bounce: this.bounceMs };
+            for (let k = 0; k < dist; k++) {
+              events.push({ at: start + k * step + this.fallMs, col: m.c, final: k === dist - 1 });
+            }
+            end = Math.max(end, start + (dist - 1) * step + this.fallMs + this.bounceMs);
+          }
+          if (!events.length) return;
+          this.isTransitioning = true;
+          let result = 0;
+          if (this.soundEngine && this.soundEngine.schedule) {
+            const t0 = performance.now();
+            try {
+              result = this.soundEngine.schedule(events, this.cols, { chime }) || 0;
+            } catch (e) {
+              result = performance.now() - t0;
+              if (this.onSoundError) this.onSoundError(e);
+            }
+          }
+          const shiftAll = (ms) => {
+            for (const m of this.modules) if (m.plan) m.plan.start += ms;
+            end += ms;
+          };
+          const go = () => {
+            this._endAt = end;
+            this._animate();
+            if (this.onStart) {
+              try {
+                this.onStart();
+              } catch (e) {
+              }
+            }
+            clearTimeout(this._finishTimer);
+            this._finishTimer = setTimeout(() => this._finish(), end - performance.now() + 60);
+          };
+          if (result && typeof result.then === "function") {
+            const HOLD = 1e9;
+            shiftAll(HOLD);
+            let released = false;
+            const release = (shift) => {
+              if (released) return;
+              released = true;
+              shiftAll(shift - HOLD);
+              go();
+            };
+            const safety = setTimeout(() => release(performance.now() - now), 6e3);
+            result.then((v) => {
+              clearTimeout(safety);
+              release(v && typeof v.shift === "number" ? v.shift : performance.now() - now);
+            });
+          } else {
+            if (result) shiftAll(result);
+            go();
+          }
+        }
+        // Jump every module to its target and stop.
+        _finish() {
+          const n = DRUM.length;
+          for (const m of this.modules) {
+            if (!m.plan) continue;
+            m.idx = (m.plan.from + m.plan.dist) % n;
+            m.plan = null;
+            this._drawModule(m, performance.now());
+          }
+          if (this._raf) cancelAnimationFrame(this._raf);
+          this._raf = null;
+          this.isTransitioning = false;
+          if (this.soundEngine && this.soundEngine.setActivity) this.soundEngine.setActivity(0);
+        }
+        // ------------------------------------------------------------ layout
+        _layout() {
+          const availW = this.opts.size ? this.opts.size[0] : window.innerWidth * 0.95;
+          const availH = this.opts.size ? this.opts.size[1] : window.innerHeight * 0.82;
+          const unitsW = this.cols + (this.cols - 1) * GAP_X + 2 * FRAME_PAD_X;
+          const unitsH = this.rows * CELL_ASPECT + (this.rows - 1) * GAP_Y * CELL_ASPECT + 2 * FRAME_PAD_Y;
+          const cw = Math.max(8, Math.floor(Math.min(availW / unitsW, availH / unitsH)));
+          const ch = Math.round(cw * CELL_ASPECT);
+          const g = {
+            cw,
+            ch,
+            gx: Math.round(cw * GAP_X),
+            gy: Math.round(ch * GAP_Y),
+            padX: Math.round(cw * FRAME_PAD_X),
+            padY: Math.round(cw * FRAME_PAD_Y),
+            hinge: Math.max(1, Math.round(ch * 0.02))
+            // gap between the two halves
+          };
+          g.hh = Math.floor((ch - g.hinge) / 2);
+          g.width = g.padX * 2 + this.cols * cw + (this.cols - 1) * g.gx;
+          g.height = g.padY * 2 + this.rows * ch + (this.rows - 1) * g.gy;
+          this.g = g;
+          const dpr = this.opts.dpr || Math.min(window.devicePixelRatio || 1, 2);
+          this.dpr = dpr;
+          for (const cv of [this.bg, this.fg]) {
+            cv.width = Math.round(g.width * dpr);
+            cv.height = Math.round(g.height * dpr);
+            cv.style.width = g.width + "px";
+            cv.style.height = g.height + "px";
+          }
+          this.el.style.width = g.width + "px";
+          this.el.style.height = g.height + "px";
+          this._buildAtlas();
+          this._drawFrame();
+          const ctx = this.fg.getContext("2d");
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, g.width, g.height);
+          for (const m of this.modules) this._drawModule(m, performance.now());
+        }
+        _cellX(c) {
+          return this.g.padX + c * (this.g.cw + this.g.gx);
+        }
+        _cellY(r) {
+          return this.g.padY + r * (this.g.ch + this.g.gy);
+        }
+        // Pre-render every flap half once: faces, shading and glyphs.
+        _buildAtlas() {
+          const { cw, ch, hh } = this.g;
+          const dpr = this.dpr;
+          const radius = Math.max(1.5, cw * 0.07);
+          this.atlasTop = [];
+          this.atlasBottom = [];
+          const full = document.createElement("canvas");
+          full.width = Math.round(cw * dpr);
+          full.height = Math.round(ch * dpr);
+          const f = full.getContext("2d");
+          for (const chr of DRUM) {
+            f.setTransform(dpr, 0, 0, dpr, 0, 0);
+            f.clearRect(0, 0, cw, ch);
+            const tile = TILE_COLORS[chr];
+            const halves = [
+              [0, hh, FACE_TOP, [radius, radius, 0, 0]],
+              [ch - hh, hh, FACE_BOTTOM, [0, 0, radius, radius]]
+            ];
+            for (const [y, h, shades, radii] of halves) {
+              const grad = f.createLinearGradient(0, y, 0, y + h);
+              if (tile) {
+                grad.addColorStop(0, shade(tile, y ? -0.04 : 0.06));
+                grad.addColorStop(1, shade(tile, y ? -0.14 : -0.04));
+              } else {
+                grad.addColorStop(0, shades[0]);
+                grad.addColorStop(1, shades[1]);
+              }
+              f.fillStyle = grad;
+              roundRect(f, 0, y, cw, h, radii);
+              f.fill();
+              f.fillStyle = "rgba(255,255,255,0.05)";
+              f.fillRect(radii[0] ? radius : 0, y, cw - (radii[0] ? radius * 2 : 0), Math.max(1, ch * 8e-3));
+            }
+            const icon = ICONS[chr];
+            if (icon) {
+              f.save();
+              f.beginPath();
+              f.rect(0, 0, cw, hh);
+              f.rect(0, ch - hh, cw, hh);
+              f.clip();
+              drawIcon(f, icon, cw / 2, ch / 2, Math.min(cw, ch) * 0.36);
+              f.restore();
+            } else if (!tile && chr !== " ") {
+              f.fillStyle = INK;
+              f.textAlign = "center";
+              f.textBaseline = "middle";
+              f.font = "800 ".concat(Math.round(ch * 0.64), "px ").concat(FONT_STACK);
+              f.save();
+              f.beginPath();
+              f.rect(0, 0, cw, hh);
+              f.rect(0, ch - hh, cw, hh);
+              f.clip();
+              f.translate(cw / 2, ch / 2 + ch * 0.03);
+              f.scale(0.86, 1);
+              f.fillText(chr, 0, 0);
+              f.restore();
+            }
+            const top = f.createLinearGradient(0, 0, 0, hh);
+            top.addColorStop(0, "rgba(0,0,0,0)");
+            top.addColorStop(1, "rgba(0,0,0,0.16)");
+            f.globalCompositeOperation = "source-atop";
+            f.fillStyle = top;
+            f.fillRect(0, 0, cw, hh);
+            const bottom = f.createLinearGradient(0, ch - hh, 0, ch);
+            bottom.addColorStop(0, "rgba(0,0,0,0.06)");
+            bottom.addColorStop(1, "rgba(0,0,0,0.24)");
+            f.fillStyle = bottom;
+            f.fillRect(0, ch - hh, cw, hh);
+            f.globalCompositeOperation = "source-over";
+            this.atlasTop.push(crop(full, 0, 0, cw, hh, dpr));
+            this.atlasBottom.push(crop(full, 0, ch - hh, cw, hh, dpr));
+          }
+        }
+        // The housing: matte black frame, recessed wells, flap stacks below each module.
+        _drawFrame() {
+          const g = this.g;
+          const ctx = this.bg.getContext("2d");
+          ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+          ctx.clearRect(0, 0, g.width, g.height);
+          const r = g.cw * 0.35;
+          const body = ctx.createLinearGradient(0, 0, 0, g.height);
+          body.addColorStop(0, "#161616");
+          body.addColorStop(1, "#0d0d0d");
+          ctx.fillStyle = body;
+          roundRect(ctx, 0, 0, g.width, g.height, [r, r, r, r]);
+          ctx.fill();
+          const noise = document.createElement("canvas");
+          noise.width = noise.height = 128;
+          const nctx = noise.getContext("2d");
+          const img = nctx.createImageData(128, 128);
+          for (let i = 0; i < img.data.length; i += 4) {
+            const v = Math.random() * 255;
+            img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+            img.data[i + 3] = 10;
+          }
+          nctx.putImageData(img, 0, 0);
+          ctx.save();
+          roundRect(ctx, 0, 0, g.width, g.height, [r, r, r, r]);
+          ctx.clip();
+          ctx.fillStyle = ctx.createPattern(noise, "repeat");
+          ctx.fillRect(0, 0, g.width, g.height);
+          const rim = ctx.createLinearGradient(0, 0, 0, g.height);
+          rim.addColorStop(0, "rgba(255,255,255,0.07)");
+          rim.addColorStop(0.03, "rgba(255,255,255,0)");
+          rim.addColorStop(0.97, "rgba(0,0,0,0)");
+          rim.addColorStop(1, "rgba(0,0,0,0.5)");
+          ctx.fillStyle = rim;
+          ctx.fillRect(0, 0, g.width, g.height);
+          ctx.restore();
+          for (let row = 0; row < this.rows; row++) {
+            for (let c = 0; c < this.cols; c++) {
+              const x = this._cellX(c);
+              const y = this._cellY(row);
+              const m = Math.max(1, g.cw * 0.04);
+              ctx.fillStyle = "#070707";
+              roundRect(ctx, x - m, y - m, g.cw + 2 * m, g.ch + 2 * m + g.gy * 0.35, [3, 3, 3, 3]);
+              ctx.fill();
+              for (let k = 1; k <= 3; k++) {
+                ctx.fillStyle = k % 2 ? "#1f1f1f" : "#0b0b0b";
+                ctx.fillRect(x + 1, y + g.ch + k * Math.max(1, g.gy * 0.08), g.cw - 2, Math.max(1, g.gy * 0.06));
+              }
+              ctx.fillStyle = "#3b3b3b";
+              const pinH = Math.max(2, g.hinge * 2.4);
+              ctx.fillRect(x - m * 0.8, y + g.ch / 2 - pinH / 2, m * 1.2, pinH);
+              ctx.fillRect(x + g.cw - m * 0.4, y + g.ch / 2 - pinH / 2, m * 1.2, pinH);
+            }
+          }
+        }
+        // ------------------------------------------------------------ animation
+        _animate() {
+          if (this._raf) return;
+          const tick = () => {
+            const now = performance.now();
+            let moving = 0;
+            for (const m of this.modules) {
+              if (!m.plan) continue;
+              this._drawModule(m, now);
+              if (m.plan && now >= m.plan.start) moving++;
+            }
+            if (this.soundEngine && this.soundEngine.setActivity) {
+              this.soundEngine.setActivity(Math.min(1, moving / 40));
+            }
+            if (now < this._endAt || this.modules.some((m) => m.plan)) {
+              this._raf = requestAnimationFrame(tick);
+            } else {
+              this._raf = null;
+              this.isTransitioning = false;
+              if (this.soundEngine && this.soundEngine.setActivity) this.soundEngine.setActivity(0);
+            }
+          };
+          this._raf = requestAnimationFrame(tick);
+        }
+        // Where is module m at time `now`? Returns the flap state to draw.
+        _state(m, now) {
+          const p = m.plan;
+          if (!p || now < p.start) return { from: m.idx, to: m.idx, angle: 0 };
+          const n = DRUM.length;
+          const elapsed = now - p.start;
+          let k = Math.floor(elapsed / p.step);
+          if (k >= p.dist) k = p.dist - 1;
+          const t = elapsed - k * p.step;
+          const from = (p.from + k) % n;
+          const to = (from + 1) % n;
+          const final = k === p.dist - 1;
+          if (t < p.fall) {
+            const u = t / p.fall;
+            return { from, to, angle: Math.PI * Math.pow(u, 1.75) };
+          }
+          if (final && t < p.fall + p.bounce) {
+            const tb = t - p.fall;
+            const amp = 0.22 * Math.exp(-tb / (p.bounce * 0.26));
+            return { from, to, angle: Math.PI - amp * Math.abs(Math.sin(tb / p.bounce * Math.PI * 2.6)), bouncing: true };
+          }
+          if (final) {
+            m.idx = (p.from + p.dist) % n;
+            m.plan = null;
+            return { from: m.idx, to: m.idx, angle: 0 };
+          }
+          return { from: to, to, angle: 0 };
+        }
+        _drawModule(m, now) {
+          const g = this.g;
+          const ctx = this.fg.getContext("2d");
+          const s = this._state(m, now);
+          const x = this._cellX(m.c);
+          const y = this._cellY(m.r);
+          const hingeY = y + g.hh + g.hinge / 2;
+          const bottomY = y + g.ch - g.hh;
+          const pad = g.gx * 0.45;
+          ctx.clearRect(x - pad, y - g.gy * 0.3, g.cw + 2 * pad, g.ch + g.gy * 0.3);
+          if (s.bouncing) {
+            ctx.drawImage(this.atlasTop[s.to], x, y, g.cw, g.hh);
+            ctx.drawImage(this.atlasBottom[s.from], x, bottomY, g.cw, g.hh);
+            this._shadowBottom(ctx, x, bottomY, 0.7);
+            this._drawFalling(ctx, x, hingeY, this.atlasBottom[s.to], s.angle);
+            return;
+          }
+          if (!s.angle) {
+            ctx.drawImage(this.atlasTop[s.to], x, y, g.cw, g.hh);
+            ctx.drawImage(this.atlasBottom[s.to], x, bottomY, g.cw, g.hh);
+            return;
+          }
+          ctx.drawImage(this.atlasTop[s.to], x, y, g.cw, g.hh);
+          ctx.drawImage(this.atlasBottom[s.from], x, bottomY, g.cw, g.hh);
+          if (s.angle < Math.PI / 2) {
+            const k = Math.sin(s.angle);
+            const grad = ctx.createLinearGradient(0, hingeY, 0, y);
+            grad.addColorStop(0, "rgba(0,0,0,".concat(0.55 * k, ")"));
+            grad.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, g.cw, g.hh);
+            this._drawFalling(ctx, x, hingeY, this.atlasTop[s.from], s.angle);
+          } else {
+            this._shadowBottom(ctx, x, bottomY, 0.6 * Math.sin(s.angle));
+            this._drawFalling(ctx, x, hingeY, this.atlasBottom[s.to], s.angle);
+          }
+        }
+        _shadowBottom(ctx, x, y, alpha) {
+          const g = this.g;
+          const grad = ctx.createLinearGradient(0, y, 0, y + g.hh);
+          grad.addColorStop(0, "rgba(0,0,0,".concat(Math.min(0.85, alpha), ")"));
+          grad.addColorStop(1, "rgba(0,0,0,".concat(Math.min(0.85, alpha * 0.35), ")"));
+          ctx.fillStyle = grad;
+          ctx.fillRect(x, y, g.cw, g.hh);
+        }
+        // Draw a flap rotated `angle` about the hinge (0 = up, π = down), in
+        // perspective: strips farther from the hinge come towards the viewer and
+        // get wider. `img` is the half being shown (front when angle < π/2).
+        _drawFalling(ctx, x, hingeY, img, angle) {
+          const g = this.g;
+          const hh = g.hh;
+          const cos = Math.cos(angle);
+          const sin = Math.sin(angle);
+          const D = CAMERA * hh;
+          const front = angle < Math.PI / 2;
+          const iw = img.width;
+          const ih = img.height;
+          const pts = [];
+          for (let i = 0; i <= STRIPS; i++) {
+            const r = hh * i / STRIPS;
+            const sc = D / (D - r * sin);
+            pts.push({ y: hingeY - r * cos * sc, w: g.cw * sc });
+          }
+          for (let i = 0; i < STRIPS; i++) {
+            const a = pts[i];
+            const b = pts[i + 1];
+            const y0 = Math.min(a.y, b.y);
+            const h = Math.abs(b.y - a.y) + 0.6;
+            const w = (a.w + b.w) / 2;
+            const sy = front ? ih * (1 - (i + 1) / STRIPS) : ih * i / STRIPS;
+            const sh = ih / STRIPS;
+            if (h < 0.3) continue;
+            ctx.drawImage(img, 0, sy, iw, sh, x + (g.cw - w) / 2, y0, w, h);
+          }
+          const dark = front ? 0.72 * sin : 0.38 * sin;
+          const edge = pts[STRIPS];
+          ctx.beginPath();
+          ctx.moveTo(x + (g.cw - pts[0].w) / 2, pts[0].y);
+          ctx.lineTo(x + (g.cw + pts[0].w) / 2, pts[0].y);
+          ctx.lineTo(x + (g.cw + edge.w) / 2, edge.y);
+          ctx.lineTo(x + (g.cw - edge.w) / 2, edge.y);
+          ctx.closePath();
+          ctx.fillStyle = "rgba(0,0,0,".concat(dark, ")");
+          ctx.fill();
+          if (!front && sin > 0.15) {
+            ctx.fillStyle = "rgba(255,255,255,".concat(0.16 * sin, ")");
+            ctx.fillRect(x + (g.cw - edge.w) / 2, edge.y - (edge.y > pts[0].y ? 1.5 : 0), edge.w, 1.5);
+          }
+        }
+        _formatToGrid(lines) {
+          const grid = [];
+          for (let r = 0; r < this.rows; r++) {
+            const line = Array.from(lines[r] || "");
+            const padLeft = Math.max(0, Math.floor((this.cols - line.length) / 2));
+            const row = Array(this.cols).fill(" ");
+            line.slice(0, this.cols).forEach((ch, i) => {
+              if (padLeft + i < this.cols) row[padLeft + i] = ch.toUpperCase();
+            });
+            grid.push(row);
+          }
+          return grid;
+        }
+      };
+    }
+  });
+
   // board/js/send.js
   var require_send = __commonJS({
     "board/js/send.js"(exports) {
       init_constants();
       init_formatMessage();
       init_drum();
+      init_FlapBoard();
       var KEY = "flipboard.sender";
       var SERVER = "https://ntfy.sh";
       var onHub = !!window.FLIP_HUB;
@@ -809,13 +1418,19 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
           pal.appendChild(b);
         }
       }
+      var caret = /* @__PURE__ */ new Map();
+      for (const el of [msgEl, codesEl]) {
+        const keep = () => caret.set(el, [el.selectionStart, el.selectionEnd]);
+        for (const ev of ["input", "keyup", "click", "select", "blur"]) el.addEventListener(ev, keep);
+      }
       function insert(text) {
         const el = lastField;
-        const start = el.selectionStart != null ? el.selectionStart : el.value.length;
-        const end = el.selectionEnd != null ? el.selectionEnd : el.value.length;
+        const focused = document.activeElement === el;
+        const [start, end] = focused ? [el.selectionStart, el.selectionEnd] : caret.get(el) || [el.value.length, el.value.length];
         el.value = el.value.slice(0, start) + text + el.value.slice(end);
-        el.focus();
-        el.selectionStart = el.selectionEnd = start + text.length;
+        const at = start + text.length;
+        caret.set(el, [at, at]);
+        if (focused) el.selectionStart = el.selectionEnd = at;
         renderPreview();
       }
       $("random-btn").addEventListener("click", () => {
@@ -1064,7 +1679,9 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         syncMs: (v) => "".concat(v > 0 ? "+" : "").concat(v, " ms")
       };
       var saveTimer = null;
+      var flapSpeed = 0.6;
       function showValues(st) {
+        if (typeof st.flapSpeed === "number") flapSpeed = st.flapSpeed / 100;
         if (typeof st.autoOff === "number") $("autoOff").value = String(st.autoOff);
         if (typeof st.quoteOn === "number") {
           $("quoteOn").checked = st.quoteOn === 1;
@@ -1219,22 +1836,110 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         if (!onHub) $("tv-state").textContent = n.on ? "on" : "in standby";
         const tv = roomTV();
         if (!tv) return;
-        if (words !== drawn.words) {
-          tv.show(words || " ");
+        const key = "".concat(n.text, "\0").concat(n.from, "\0").concat(n.at);
+        if (key !== drawn.words) {
+          drawn = { words: key, on: true };
+          if (screen.ok) {
+            tv.power(true);
+            tv.screen(screen.canvas);
+            screenShow(n);
+          } else {
+            tv.show(words || " ");
+          }
           focusRoomTV();
-          drawn = { words, on: true };
         }
         if (n.on !== drawn.on) {
           tv.power(n.on);
           drawn.on = n.on;
         }
       }
-      function focusRoomTV() {
-        try {
-          roomFrame.contentDocument.getElementById("send").click();
-        } catch (e) {
+      var SCREEN_W = 1024;
+      var SCREEN_H = 600;
+      var screen = { ok: false, canvas: null, board: null, pages: [], page: 0, timer: null, caption: "", pending: null, pump: 0 };
+      try {
+        const holder = document.createElement("div");
+        holder.style.cssText = "position:fixed;left:-20000px;top:0;width:1px;height:1px;overflow:hidden;pointer-events:none";
+        holder.setAttribute("aria-hidden", "true");
+        document.body.appendChild(holder);
+        screen.board = new FlapBoard(holder, null, { size: [SCREEN_W * 0.96, SCREEN_H * 0.8], dpr: 1 });
+        screen.canvas = document.createElement("canvas");
+        screen.canvas.width = SCREEN_W;
+        screen.canvas.height = SCREEN_H;
+        screen.ok = true;
+      } catch (e) {
+      }
+      function screenDraw() {
+        const b = screen.board;
+        const x = screen.canvas.getContext("2d");
+        x.fillStyle = "#0b0b0b";
+        x.fillRect(0, 0, SCREEN_W, SCREEN_H);
+        const bw = b.fg.width;
+        const bh = b.fg.height;
+        const left = (SCREEN_W - bw) / 2;
+        const top = (SCREEN_H - bh) / 2 - 24;
+        x.drawImage(b.bg, left, top);
+        x.drawImage(b.fg, left, top);
+        if (screen.caption) {
+          x.fillStyle = "rgba(241, 240, 234, 0.55)";
+          x.font = "600 26px -apple-system, Helvetica, Arial, sans-serif";
+          x.textAlign = "center";
+          x.textBaseline = "top";
+          x.fillText(screen.caption, SCREEN_W / 2, top + bh + 22);
+        }
+        const tv = roomTV();
+        if (tv) tv.refresh();
+      }
+      function screenPump() {
+        cancelAnimationFrame(screen.pump);
+        const step = () => {
+          screenDraw();
+          if (screen.board.isTransitioning || screen.pending) screen.pump = requestAnimationFrame(step);
+        };
+        step();
+      }
+      function screenFlip(lines) {
+        if (screen.board.isTransitioning) {
+          screen.pending = lines;
+          return;
+        }
+        screen.pending = null;
+        screen.board.setSpeed(flapSpeed);
+        screen.board.displayMessage(lines);
+        screenPump();
+      }
+      setInterval(() => {
+        if (screen.pending && !screen.board.isTransitioning) screenFlip(screen.pending);
+      }, 200);
+      function screenShow(n) {
+        const pages = toPages(n.text || "");
+        screen.pages = pages.length ? pages : [Array(GRID_ROWS).fill("")];
+        screen.page = 0;
+        const time = n.at ? new Date(n.at * 1e3).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
+        screen.caption = [n.from && "From ".concat(n.from), time].filter(Boolean).join("  ·  ");
+        clearInterval(screen.timer);
+        screenFlip(screen.pages[0]);
+        if (screen.pages.length > 1) {
+          screen.timer = setInterval(() => {
+            screen.page = (screen.page + 1) % screen.pages.length;
+            screenFlip(screen.pages[screen.page]);
+          }, 9e3);
         }
       }
+      function focusRoomTV(instant) {
+        const tv = roomTV();
+        if (tv && tv.focus) tv.focus(instant);
+      }
+      $("save-view").addEventListener("click", () => {
+        const tv = roomTV();
+        if (!tv || !tv.view) return;
+        const v = tv.view();
+        tv.anchor(v);
+        prefs = Object.assign({}, prefs, { view: v });
+        save(prefs);
+        const b = $("save-view");
+        b.textContent = "Saved";
+        setTimeout(() => b.textContent = "Save view", 1500);
+      });
       function pollNow() {
         return __async(this, null, function* () {
           try {
@@ -1301,17 +2006,19 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
           syncLighting();
         });
       }
-      $("view-tv").addEventListener("click", focusRoomTV);
+      $("view-tv").addEventListener("click", () => focusRoomTV(false));
       roomFrame.addEventListener("load", () => {
         if (!roomFrame.getAttribute("src") && !roomFrame.srcdoc) return;
         roomLoaded = true;
         embedRoom();
+        const tv = roomTV();
+        if (tv && tv.anchor && prefs.view) tv.anchor(prefs.view);
+        focusRoomTV(true);
         drawn = { words: null, on: null };
         renderNow();
-        focusRoomTV();
         syncLighting();
         $("stage-tools").hidden = false;
-        setTimeout(() => roomFrame.classList.add("ready"), 700);
+        roomFrame.classList.add("ready");
       });
       function loadRoom() {
         return __async(this, null, function* () {
@@ -1343,7 +2050,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         loadRoom();
         if (onHub) {
           pollNow();
-          setInterval(pollNow, 2e3);
+          setInterval(pollNow, 1e3);
         } else {
           listenNow();
         }
