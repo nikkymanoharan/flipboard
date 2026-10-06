@@ -153,6 +153,36 @@ button:focus-visible { outline: 2px solid var(--marigold); outline-offset: 2px; 
   transition: opacity 0.5s;
 }
 .live-stage iframe.ready { opacity: 1; }
+/* Lighting and "TV view", floating over the room. */
+.stage-tools {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.stage-tools > * { pointer-events: auto; }
+.seg, .tool {
+  background: rgba(250, 247, 242, 0.88);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(46, 38, 32, 0.12);
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  color: #2e2620;
+}
+.seg { display: flex; padding: 3px; }
+.seg button { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #7a6d61; }
+.seg button[aria-pressed='true'] { background: var(--marigold); color: #2e2014; }
+.tool { padding: 7px 13px; font-size: 13px; font-weight: 600; }
+@media (prefers-color-scheme: dark) {
+  .seg, .tool { background: rgba(30, 32, 38, 0.85); border-color: rgba(241, 236, 228, 0.14); color: #f1ece4; }
+  .seg button { color: #a79c90; }
+}
 .room-status {
   position: absolute;
   inset: auto 16px 16px;
@@ -260,19 +290,32 @@ details summary { cursor: pointer; font-size: 14px; color: var(--muted); }
 details[open] { display: grid; gap: 8px; }
 .controls-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.recent { list-style: none; display: grid; gap: 8px; }
+/* Recent: one line per message, never wider than the card. */
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.recent { list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; margin: 0 -4px; }
+.recent li { min-width: 0; }
+.recent li + li { border-top: 1px solid var(--line); }
 .recent button {
+  display: block;
   width: 100%;
   text-align: left;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 11px 14px;
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding: 10px 4px;
+  font-size: 15px;
+  border-radius: 8px;
 }
+.recent button:active { background: var(--field); }
+.msg-line { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-line .tile {
+  display: inline-block;
+  width: 9px;
+  height: 12px;
+  margin: 0 1px;
+  border-radius: 2px;
+  vertical-align: -1px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+#recent-more { justify-self: start; }
+#recent-card { margin-top: 18px; }
 
 .toggle { display: flex; align-items: center; gap: 10px; font-weight: 600; }
 .toggle input { width: 22px; height: 22px; accent-color: var(--marigold); }
@@ -318,6 +361,14 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         <div class="live-stage">
           <iframe id="room-frame" title="Your living room, live"></iframe>
           <p id="room-status" class="room-status" hidden></p>
+          <div class="stage-tools" id="stage-tools" hidden>
+            <div class="seg" role="group" aria-label="Lighting">
+              <button type="button" data-mode="auto" aria-pressed="true" title="Follows the time of day">Auto</button>
+              <button type="button" data-mode="day" aria-pressed="false">Day</button>
+              <button type="button" data-mode="night" aria-pressed="false">Night</button>
+            </div>
+            <button id="view-tv" class="tool" type="button" title="Back to the TV">TV view</button>
+          </div>
         </div>
         <div class="now">
           <span id="live-dot" class="live-dot"></span>
@@ -370,6 +421,15 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
 
       <button id="send-btn" class="primary" type="button" disabled>Send to TV</button>
       <p id="send-status" class="status" role="status"></p>
+      <section id="recent-card" class="card controls" hidden>
+        <div class="card-head">
+          <h2>Recent</h2>
+          <span class="muted small">Tap one to use it again</span>
+        </div>
+        <p id="receipt-note" class="muted small" hidden></p>
+        <ul id="recent" class="recent"></ul>
+        <button id="recent-more" class="secondary" type="button" hidden></button>
+      </section>
 
       <section id="controls" class="card controls" hidden>
         <h2>Board</h2>
@@ -431,9 +491,6 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         <p id="pair-missing" class="muted small" hidden>The page for sending from anywhere isn't published yet.</p>
       </section>
 
-      <h3 id="recent-title" hidden>Recent</h3>
-      <p id="receipt-note" class="muted small" hidden></p>
-      <ul id="recent" class="recent"></ul>
     </section>
   </main>
 
@@ -880,17 +937,45 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         if (rc.onTv) return '<span class="on">✓✓ On the TV '.concat(time(rc.onTv), "</span>");
         return "✓ Sent";
       }
+      function messageLine(text) {
+        const line = document.createElement("span");
+        line.className = "msg-line";
+        for (const part of text.replace(/\n/g, "  ·  ").split(/(\{[a-z]+\})/i)) {
+          if (!part) continue;
+          const ch = /^\{[a-z]+\}$/i.test(part) ? COLOR_TOKENS[part.slice(1, -1).toLowerCase()] : null;
+          if (ch && TILE_COLORS[ch]) {
+            const t = document.createElement("i");
+            t.className = "tile";
+            t.style.background = TILE_COLORS[ch];
+            line.appendChild(t);
+          } else if (ch && ICONS[ch]) {
+            line.appendChild(document.createTextNode(ICONS[ch].emoji));
+          } else {
+            line.appendChild(document.createTextNode(part));
+          }
+        }
+        return line;
+      }
+      var RECENT_SHOWN = 3;
+      var recentAll = false;
+      $("recent-more").addEventListener("click", () => {
+        recentAll = !recentAll;
+        renderRecent();
+      });
       function renderRecent() {
         const recent = recentList();
-        $("recent-title").hidden = recent.length === 0;
+        $("recent-card").hidden = recent.length === 0;
         $("replay-btn").disabled = recent.length === 0;
+        const more = $("recent-more");
+        more.hidden = recent.length <= RECENT_SHOWN;
+        more.textContent = recentAll ? "Show fewer" : "Show all ".concat(recent.length);
         const ul = $("recent");
         ul.innerHTML = "";
-        for (const r of recent) {
+        for (const r of recentAll ? recent : recent.slice(0, RECENT_SHOWN)) {
           const li = document.createElement("li");
           const b = document.createElement("button");
           b.type = "button";
-          b.textContent = r.text.replace(/\n/g, "  ·  ");
+          b.appendChild(messageLine(r.text));
           const ticks = document.createElement("span");
           ticks.className = "ticks";
           ticks.innerHTML = tickLine(r);
@@ -1120,6 +1205,11 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         if (!n) {
           $("now-text").textContent = nowLive ? "Nothing on the board yet" : "Waiting for the TV…";
           $("now-meta").textContent = "";
+          const tv2 = roomTV();
+          if (tv2 && drawn.words === null) {
+            tv2.show(" ");
+            drawn = { words: " ", on: true };
+          }
           return;
         }
         const words = roomText(n.text);
@@ -1192,13 +1282,36 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         } catch (e) {
         }
       }
+      function roomButton(selector) {
+        try {
+          return roomFrame.contentDocument.querySelector(selector);
+        } catch (e) {
+          return null;
+        }
+      }
+      function syncLighting() {
+        const on = roomButton('.seg button[aria-pressed="true"]');
+        const mode = on ? on.dataset.mode : "auto";
+        for (const b of document.querySelectorAll("#stage-tools .seg button")) b.setAttribute("aria-pressed", String(b.dataset.mode === mode));
+      }
+      for (const b of document.querySelectorAll("#stage-tools .seg button")) {
+        b.addEventListener("click", () => {
+          const own = roomButton('.seg button[data-mode="'.concat(b.dataset.mode, '"]'));
+          if (own) own.click();
+          syncLighting();
+        });
+      }
+      $("view-tv").addEventListener("click", focusRoomTV);
       roomFrame.addEventListener("load", () => {
         if (!roomFrame.getAttribute("src") && !roomFrame.srcdoc) return;
         roomLoaded = true;
         embedRoom();
         drawn = { words: null, on: null };
         renderNow();
-        roomFrame.classList.add("ready");
+        focusRoomTV();
+        syncLighting();
+        $("stage-tools").hidden = false;
+        setTimeout(() => roomFrame.classList.add("ready"), 700);
       });
       function loadRoom() {
         return __async(this, null, function* () {
