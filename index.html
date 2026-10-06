@@ -1855,7 +1855,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
       }
       var SCREEN_W = 1024;
       var SCREEN_H = 600;
-      var screen = { ok: false, canvas: null, board: null, pages: [], page: 0, timer: null, caption: "", pending: null, pump: 0 };
+      var screen = { ok: false, canvas: null, board: null, text: null, pages: [], page: 0, timer: null, caption: "", pending: null, pump: 0 };
       try {
         const holder = document.createElement("div");
         holder.style.cssText = "position:fixed;left:-20000px;top:0;width:1px;height:1px;overflow:hidden;pointer-events:none";
@@ -1897,27 +1897,29 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         };
         step();
       }
-      function screenFlip(lines) {
+      function screenFlip(lines, replay = false) {
         if (screen.board.isTransitioning) {
-          screen.pending = lines;
+          screen.pending = { lines, replay };
           return;
         }
         screen.pending = null;
         screen.board.setSpeed(flapSpeed);
-        screen.board.displayMessage(lines);
+        screen.board.displayMessage(lines, replay);
         screenPump();
       }
       setInterval(() => {
-        if (screen.pending && !screen.board.isTransitioning) screenFlip(screen.pending);
+        if (screen.pending && !screen.board.isTransitioning) screenFlip(screen.pending.lines, screen.pending.replay);
       }, 200);
       function screenShow(n) {
+        const again = screen.text === n.text;
+        screen.text = n.text;
         const pages = toPages(n.text || "");
         screen.pages = pages.length ? pages : [Array(GRID_ROWS).fill("")];
         screen.page = 0;
         const time = n.at ? new Date(n.at * 1e3).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
         screen.caption = [n.from && "From ".concat(n.from), time].filter(Boolean).join("  ·  ");
         clearInterval(screen.timer);
-        screenFlip(screen.pages[0]);
+        screenFlip(screen.pages[0], again);
         if (screen.pages.length > 1) {
           screen.timer = setInterval(() => {
             screen.page = (screen.page + 1) % screen.pages.length;
