@@ -2108,7 +2108,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         loadRoom();
         if (onHub) {
           pollNow();
-          setInterval(pollNow, 1e3);
+          setInterval(pollNow, 2e3);
         } else {
           listenNow();
         }
