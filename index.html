@@ -650,7 +650,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         "♪": ""
         // ♪
       });
-      DRUM = [" "].concat("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$()-+&=;:'\"%,./?".split("")).concat(Object.keys(TILE_COLORS)).concat(Object.keys(ICONS));
+      DRUM = [" "].concat("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$()-+&=;:'\"%,./?".split("")).concat(Object.keys(TILE_COLORS)).concat(Object.keys(ICONS)).concat(["°"]);
       INDEX = new Map(DRUM.map((ch, i) => [ch, i]));
     }
   });
@@ -658,6 +658,28 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
   // board/js/formatMessage.js
   function normalize(text) {
     return String(text || "").replace(/\r\n?/g, "\n").replace(/\{([a-z]+)\}/gi, (m, name) => COLOR_TOKENS[name.toLowerCase()] || "").replace(/\uFE0F/g, "").replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF\u2B50\u2661\u2665]/g, (e) => EMOJI_TO_ICON[e] || e).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[‘’‛]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").replace(/…/g, "...").toUpperCase().split("").map((ch) => ch === "\n" || ALLOWED.test(ch) ? ch : ch.trim() ? "" : " ").join("");
+  }
+  function gridPage(text, cols = GRID_COLS, rows = GRID_ROWS) {
+    const lines = normalize(text).split("\n");
+    const page = [];
+    for (let r = 0; r < rows; r++) {
+      const line = Array.from(lines[r] || "").slice(0, cols);
+      while (line.length < cols) line.push(" ");
+      page.push(line.join(""));
+    }
+    return [page];
+  }
+  function vestaText(codes) {
+    let out = "";
+    for (let i = 0; i < codes.length; i++) {
+      if (i && i % GRID_COLS === 0) out += "\n";
+      const c = codes.charCodeAt(i) - 48;
+      if (c >= 1 && c <= 26) out += String.fromCharCode(64 + c);
+      else if (c >= 27 && c <= 35) out += String(c - 26);
+      else if (c === 36) out += "0";
+      else out += VESTA[c] || " ";
+    }
+    return out;
   }
   function toPages(text, cols = GRID_COLS, rows = GRID_ROWS) {
     const lines = [];
@@ -697,12 +719,13 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
     }
     return pages;
   }
-  var ALLOWED;
+  var ALLOWED, VESTA;
   var init_formatMessage = __esm({
     "board/js/formatMessage.js"() {
       init_constants();
       init_drum();
-      ALLOWED = /[A-Z0-9 .,\-!?'/:;&@#+()"%$=\uE001-\uE007\uE011-\uE01C]/;
+      ALLOWED = /[A-Z0-9 .,\-!?'/:;&@#+()"%$=\u00B0\uE001-\uE007\uE011-\uE01C]/;
+      VESTA = { 37: "!", 38: "@", 39: "#", 40: "$", 41: "(", 42: ")", 44: "-", 46: "+", 47: "&", 48: "=", 49: ";", 50: ":", 52: "'", 53: '"', 54: "%", 55: ",", 56: ".", 59: "/", 60: "?", 62: "°", 63: "{r}", 64: "{o}", 65: "{y}", 66: "{g}", 67: "{b}", 68: "{v}", 69: "{w}", 71: "{w}" };
     }
   });
 
@@ -1837,7 +1860,9 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
       function applyNow(n) {
         if (!n || typeof n.text !== "string") return;
         if (nowState && n.ts && nowState.ts && n.ts < nowState.ts) return;
-        nowState = { text: n.text, from: n.from || "", at: n.at || 0, on: !!n.on, ts: n.ts || 0 };
+        const grid = !!(n.grid || n.codes);
+        const text = n.codes ? vestaText(n.codes) : n.text;
+        nowState = { text, grid, from: n.from || "", at: n.at || 0, on: !!n.on, ts: n.ts || 0 };
         renderNow();
       }
       function renderNow() {
@@ -1937,11 +1962,11 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
       function screenShow(n) {
         const again = screen.text === n.text;
         screen.text = n.text;
-        const pages = toPages(n.text || "");
+        const pages = n.grid ? gridPage(n.text || "") : toPages(n.text || "");
         screen.pages = pages.length ? pages : [Array(GRID_ROWS).fill("")];
         screen.page = 0;
         const time = n.at ? new Date(n.at * 1e3).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
-        screen.caption = [n.from && "From ".concat(n.from), time].filter(Boolean).join("  ·  ");
+        screen.caption = n.grid ? "" : [n.from && "From ".concat(n.from), time].filter(Boolean).join("  ·  ");
         clearInterval(screen.timer);
         screenFlip(screen.pages[0], again);
         if (screen.pages.length > 1) {
