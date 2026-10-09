@@ -367,6 +367,20 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
 .recent .ticks .on { color: var(--text); }
 .recent .ticks .seen { color: #2f7fd6; font-weight: 600; }
 
+/* Laptops and tablets in landscape: two columns. */
+@media (min-width: 900px) {
+  .wrap { max-width: 1180px; padding: 24px 32px 48px; }
+  #compose:not([hidden]) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+  .side { position: sticky; top: 20px; }
+  .live-stage { height: min(62vh, 560px); }
+  .main > .preview { margin-top: 0; }
+}
+
 </style>
 </head>
 <body>
@@ -381,12 +395,15 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
 
     <section id="setup" class="card" hidden>
       <h2>Connect to your TV</h2>
-      <p class="muted">This phone isn't paired yet. At home, open the control panel (http://192.168.1.250), tap <b>Share pairing link</b> under "Send from anywhere", and open that link on this phone.</p>
+      <p class="muted">This device isn't paired yet. At home, open the control panel (http://flipboard.local), tap <b>Share pairing link</b> under "Send from anywhere", and open that link on this phone.</p>
       <p id="setup-error" class="error" hidden></p>
     </section>
 
     <section id="compose" hidden>
       <!-- The living room, live: the 3D TV shows what the real one shows. -->
+      <!-- Phones: one column. Wide screens: the live room and TV on the left
+           (staying in view), composing and settings on the right. -->
+      <div class="side">
       <div class="live card">
         <div class="live-stage">
           <iframe id="room-frame" title="Your living room, live"></iframe>
@@ -432,6 +449,8 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         </div>
       </div>
 
+      </div>
+      <div class="main">
       <div class="preview" id="preview" aria-label="How the board will look"></div>
       <div class="preview-meta">
         <span id="fit-info"></span>
@@ -527,6 +546,7 @@ select { font: inherit; font-size: 15px; color: var(--text); background: var(--f
         </div>
         <p id="pair-missing" class="muted small" hidden>The page for sending from anywhere isn't published yet.</p>
       </section>
+      </div>
 
     </section>
   </main>
